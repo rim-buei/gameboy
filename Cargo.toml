@@ -1,0 +1,7 @@
+[package]
+name = "gameboy"
+version = "0.1.0"
+authors = ["Rim <rim.buei@gmail.com>"]
+edition = "2018"
+
+[dependencies]
