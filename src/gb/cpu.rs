@@ -1,3 +1,5 @@
+use super::memory::Memory;
+
 pub struct Cpu {
     registers: Registers,
 }
@@ -7,6 +9,10 @@ impl Cpu {
         Cpu {
             registers: Registers::new(),
         }
+    }
+
+    fn step(&mut self, memory: &mut Memory) {
+        // TODO: Implementation
     }
 
     fn reset(&mut self) {
