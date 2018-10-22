@@ -1,9 +1,14 @@
 # Game Boy
 A Game Boy emulator written in Rust.
 
-## Status
+# Status
 Still work in progress.
 
-## Requirements
+# Requirements
 - Rust
-- Emscripten
+- cargo-web
+
+# How to Run
+```
+$ cargo web start --target-webasm
+```
