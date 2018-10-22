@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate stdweb;
 
+mod gb;
+
 fn main() {
     stdweb::initialize();
 
