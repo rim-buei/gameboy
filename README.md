@@ -10,5 +10,5 @@ Still work in progress.
 
 # How to Run
 ```
-$ cargo web start --target-webasm
+$ cargo web start --target wasm32-unknown-unknown
 ```
