@@ -7,11 +7,11 @@ impl Ram {
         Ram { blob }
     }
 
-    pub fn write(&mut self, addr: u16, data: u8) {
-        self.blob[addr as usize] = data
-    }
-
     pub fn read(&self, addr: u16) -> u8 {
         self.blob[addr as usize]
+    }
+
+    pub fn write(&mut self, addr: u16, data: u8) {
+        self.blob[addr as usize] = data
     }
 }

@@ -5,17 +5,17 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    fn new() -> Cpu {
+    pub fn new() -> Cpu {
         Cpu {
             registers: Registers::new(),
         }
     }
 
-    fn step(&mut self, ram: &mut Ram) {
+    pub fn step(&mut self, ram: &mut Ram) {
         // TODO: Implementation
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.registers = Registers::new()
     }
 }
@@ -56,7 +56,7 @@ impl Registers {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
