@@ -36,6 +36,26 @@ struct Registers {
     PC: u16,
 }
 
+enum Register8 {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    F,
+}
+
+enum Register16 {
+    AF,
+    BC,
+    DE,
+    HL,
+    SP,
+    PC,
+}
+
 impl Registers {
     fn new() -> Registers {
         Registers {
