@@ -1,4 +1,6 @@
 # Game Boy
+[![Travis-CI](https://travis-ci.org/rim-buei/gameboy.svg)](https://travis-ci.org/rim-buei/gameboy)
+
 A Game Boy emulator written in Rust.
 
 # Status
