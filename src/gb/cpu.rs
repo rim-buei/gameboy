@@ -74,8 +74,8 @@ impl Registers {
         }
     }
 
-    fn get8(&self, register: Register8) -> u8 {
-        match register {
+    fn get8(&self, reg: Register8) -> u8 {
+        match reg {
             Register8::A => self.A,
             Register8::B => self.B,
             Register8::C => self.C,
@@ -87,21 +87,21 @@ impl Registers {
         }
     }
 
-    fn set8(&mut self, register: Register8, value: u8) {
-        match register {
-            Register8::A => self.A = value,
-            Register8::B => self.B = value,
-            Register8::C => self.C = value,
-            Register8::D => self.D = value,
-            Register8::E => self.E = value,
-            Register8::H => self.H = value,
-            Register8::L => self.L = value,
-            Register8::F => self.F = value,
+    fn set8(&mut self, reg: Register8, v: u8) {
+        match reg {
+            Register8::A => self.A = v,
+            Register8::B => self.B = v,
+            Register8::C => self.C = v,
+            Register8::D => self.D = v,
+            Register8::E => self.E = v,
+            Register8::H => self.H = v,
+            Register8::L => self.L = v,
+            Register8::F => self.F = v,
         }
     }
 
-    fn get16(&self, register: Register16) -> u16 {
-        match register {
+    fn get16(&self, reg: Register16) -> u16 {
+        match reg {
             Register16::AF => ((self.A as u16) << 8) + (self.F as u16),
             Register16::BC => ((self.B as u16) << 8) + (self.C as u16),
             Register16::DE => ((self.D as u16) << 8) + (self.E as u16),
@@ -111,26 +111,26 @@ impl Registers {
         }
     }
 
-    fn set16(&mut self, register: Register16, value: u16) {
-        match register {
+    fn set16(&mut self, reg: Register16, v: u16) {
+        match reg {
             Register16::AF => {
-                self.A = (value >> 8) as u8;
-                self.F = (value & 0xff) as u8;
+                self.A = (v >> 8) as u8;
+                self.F = (v & 0xff) as u8;
             }
             Register16::BC => {
-                self.B = (value >> 8) as u8;
-                self.C = (value & 0xff) as u8;
+                self.B = (v >> 8) as u8;
+                self.C = (v & 0xff) as u8;
             }
             Register16::DE => {
-                self.D = (value >> 8) as u8;
-                self.E = (value & 0xff) as u8;
+                self.D = (v >> 8) as u8;
+                self.E = (v & 0xff) as u8;
             }
             Register16::HL => {
-                self.H = (value >> 8) as u8;
-                self.L = (value & 0xff) as u8;
+                self.H = (v >> 8) as u8;
+                self.L = (v & 0xff) as u8;
             }
-            Register16::SP => self.SP = value,
-            Register16::PC => self.PC = value,
+            Register16::SP => self.SP = v,
+            Register16::PC => self.PC = v,
         }
     }
 }
