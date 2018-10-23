@@ -1,12 +1,10 @@
-pub struct Memory {
+pub struct Ram {
     blob: Vec<u8>,
 }
 
-impl Memory {
-    pub fn new() -> Memory {
-        Memory {
-            blob: vec![0; 0xffff],
-        }
+impl Ram {
+    pub fn new(blob: Vec<u8>) -> Ram {
+        Ram { blob }
     }
 
     pub fn write(&mut self, addr: u16, data: u8) {

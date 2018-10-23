@@ -1,7 +1,8 @@
 mod cpu;
-mod memory;
+mod ram;
+mod rom;
 
 pub struct Context {
     cpu: cpu::Cpu,
-    memory: memory::Memory,
+    ram: ram::Ram,
 }

@@ -1,4 +1,4 @@
-use super::memory::Memory;
+use super::ram::Ram;
 
 pub struct Cpu {
     registers: Registers,
@@ -11,7 +11,7 @@ impl Cpu {
         }
     }
 
-    fn step(&mut self, memory: &mut Memory) {
+    fn step(&mut self, ram: &mut Ram) {
         // TODO: Implementation
     }
 
