@@ -74,7 +74,7 @@ impl Registers {
         }
     }
 
-    fn get(&self, register: Register8) -> u8 {
+    fn get8(&self, register: Register8) -> u8 {
         match register {
             Register8::A => self.A,
             Register8::B => self.B,
@@ -87,7 +87,7 @@ impl Registers {
         }
     }
 
-    fn set(&mut self, register: Register8, value: u8) {
+    fn set8(&mut self, register: Register8, value: u8) {
         match register {
             Register8::A => self.A = value,
             Register8::B => self.B = value,
