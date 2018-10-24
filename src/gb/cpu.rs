@@ -5,7 +5,7 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    pub fn new() -> Cpu {
+    pub fn new() -> Self {
         Cpu {
             registers: Registers::new(),
         }
@@ -59,7 +59,7 @@ enum Register16 {
 }
 
 impl Registers {
-    fn new() -> Registers {
+    fn new() -> Self {
         Registers {
             A: 0x00,
             B: 0x00,

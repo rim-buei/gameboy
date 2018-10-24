@@ -3,7 +3,7 @@ pub struct Ram {
 }
 
 impl Ram {
-    pub fn new(blob: Vec<u8>) -> Ram {
+    pub fn new(blob: Vec<u8>) -> Self {
         Ram { blob }
     }
 

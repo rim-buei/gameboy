@@ -3,7 +3,7 @@ pub struct Rom {
 }
 
 impl Rom {
-    pub fn new(blob: Vec<u8>) -> Rom {
+    pub fn new(blob: Vec<u8>) -> Self {
         Rom { blob }
     }
 
