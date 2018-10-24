@@ -215,7 +215,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD0 => (0, 0), // TODO: [RET NC] [1  20/8] [- - - -]
         0xD1 => (0, 0), // TODO: [POP DE] [1  12] [- - - -]
         0xD2 => (0, 0), // TODO: [JP NC,a16] [3  16/12] [- - - -]
-        0xD3 => (0, 0), // TODO: [Unsupported]
+        0xD3 => unsupported(opcode),
         0xD4 => (0, 0), // TODO: [CALL NC,a16] [3  24/12] [- - - -]
         0xD5 => (0, 0), // TODO: [PUSH DE] [1  16] [- - - -]
         0xD6 => (0, 0), // TODO: [SUB d8] [2  8] [Z 1 H C]
@@ -223,32 +223,32 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD8 => (0, 0), // TODO: [RET C] [1  20/8] [- - - -]
         0xD9 => (0, 0), // TODO: [RETI] [1  16] [- - - -]
         0xDA => (0, 0), // TODO: [JP C,a16] [3  16/12] [- - - -]
-        0xDB => (0, 0), // TODO: [Unsupported]
+        0xDB => unsupported(opcode),
         0xDC => (0, 0), // TODO: [CALL C,a16] [3  24/12] [- - - -]
-        0xDD => (0, 0), // TODO: [Unsupported]
+        0xDD => unsupported(opcode),
         0xDE => (0, 0), // TODO: [SBC A,d8] [2  8] [Z 1 H C]
         0xDF => (0, 0), // TODO: [RST 18H] [1  16] [- - - -]
         0xE0 => (0, 0), // TODO: [LDH (a8),A] [2  12] [- - - -]
         0xE1 => (0, 0), // TODO: [POP HL] [1  12] [- - - -]
         0xE2 => (0, 0), // TODO: [LD (C),A] [2  8] [- - - -]
-        0xE3 => (0, 0), // TODO: [Unsupported]
-        0xE4 => (0, 0), // TODO: [Unsupported]
+        0xE3 => unsupported(opcode),
+        0xE4 => unsupported(opcode),
         0xE5 => (0, 0), // TODO: [PUSH HL] [1  16] [- - - -]
         0xE6 => (0, 0), // TODO: [AND d8] [2  8] [Z 0 1 0]
         0xE7 => (0, 0), // TODO: [RST 20H] [1  16] [- - - -]
         0xE8 => (0, 0), // TODO: [ADD SP,r8] [2  16] [0 0 H C]
         0xE9 => (0, 0), // TODO: [JP (HL)] [1  4] [- - - -]
         0xEA => (0, 0), // TODO: [LD (a16),A] [3  16] [- - - -]
-        0xEB => (0, 0), // TODO: [Unsupported]
-        0xEC => (0, 0), // TODO: [Unsupported]
-        0xED => (0, 0), // TODO: [Unsupported]
+        0xEB => unsupported(opcode),
+        0xEC => unsupported(opcode),
+        0xED => unsupported(opcode),
         0xEE => (0, 0), // TODO: [XOR d8] [2  8] [Z 0 0 0]
         0xEF => (0, 0), // TODO: [RST 28H] [1  16] [- - - -]
         0xF0 => (0, 0), // TODO: [LDH A,(a8)] [2  12] [- - - -]
         0xF1 => (0, 0), // TODO: [POP AF] [1  12] [Z N H C]
         0xF2 => (0, 0), // TODO: [LD A,(C)] [2  8] [- - - -]
         0xF3 => (0, 0), // TODO: [DI] [1  4] [- - - -]
-        0xF4 => (0, 0), // TODO: [Unsupported]
+        0xF4 => unsupported(opcode),
         0xF5 => (0, 0), // TODO: [PUSH AF] [1  16] [- - - -]
         0xF6 => (0, 0), // TODO: [OR d8] [2  8] [Z 0 0 0]
         0xF7 => (0, 0), // TODO: [RST 30H] [1  16] [- - - -]
@@ -256,11 +256,11 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF9 => (0, 0), // TODO: [LD SP,HL] [1  8] [- - - -]
         0xFA => (0, 0), // TODO: [LD A,(a16)] [3  16] [- - - -]
         0xFB => (0, 0), // TODO: [EI] [1  4] [- - - -]
-        0xFC => (0, 0), // TODO: [Unsupported]
-        0xFD => (0, 0), // TODO: [Unsupported]
+        0xFC => unsupported(opcode),
+        0xFD => unsupported(opcode),
         0xFE => (0, 0), // TODO: [CP d8] [2  8] [Z 1 H C]
         0xFF => (0, 0), // TODO: [RST 38H] [1  16] [- - - -]
-        _ => (1, 0),    // Just discard the instruction
+        _ => unsupported(opcode),
     }
 }
 
@@ -522,6 +522,11 @@ pub fn exec_ex(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xFD => (0, 0), // TODO: [SET 7,L] [2  8] [- - - -]
         0xFE => (0, 0), // TODO: [SET 7,(HL)] [2  16] [- - - -]
         0xFF => (0, 0), // TODO: [SET 7,A] [2  8] [- - - -]
-        _ => (1, 0),    // Just discard unknown instruction
+        _ => unsupported(opcode),
     }
+}
+
+fn unsupported(opcode: u8) -> (u8, u8) {
+    println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
+    (1, 0)
 }
