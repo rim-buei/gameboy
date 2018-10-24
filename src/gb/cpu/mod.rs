@@ -1,12 +1,34 @@
 pub mod registers;
 
+mod instructions;
+
 use super::ram::Ram;
 
+use self::instructions::exec;
+use self::instructions::exec_ex;
+use self::registers::Register16;
 use self::registers::Register8;
 use self::registers::Registers;
 
-pub fn step(reg: &mut Registers, ram: &mut Ram) {
-    // TODO: Implementation
+pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
+    let addr = reg.get16(Register16::PC);
+    let opcode = ram.read(addr);
+
+    let (bytes, cycles) = if opcode != 0xCE {
+        // 1-byte instruction
+        exec(opcode, reg, ram)
+    } else {
+        // 2-byte instruction
+        reg.inc16(Register16::PC);
+
+        let addr = reg.get16(Register16::PC);
+        let opcode = ram.read(addr);
+
+        exec_ex(opcode, reg, ram)
+    };
+
+    reg.add16(Register16::PC, bytes as u16);
+    cycles
 }
 
 pub fn reset(reg: &mut Registers) {
