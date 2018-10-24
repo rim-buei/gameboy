@@ -36,6 +36,7 @@ struct Registers {
     PC: u16,
 }
 
+#[derive(Debug, Copy, Clone)]
 enum Register8 {
     A,
     B,
@@ -47,6 +48,7 @@ enum Register8 {
     F,
 }
 
+#[derive(Debug, Copy, Clone)]
 enum Register16 {
     AF,
     BC,
@@ -115,23 +117,42 @@ impl Registers {
         match reg {
             Register16::AF => {
                 self.A = (v >> 8) as u8;
-                self.F = (v & 0xff) as u8;
+                self.F = (v & 0xFF) as u8;
             }
             Register16::BC => {
                 self.B = (v >> 8) as u8;
-                self.C = (v & 0xff) as u8;
+                self.C = (v & 0xFF) as u8;
             }
             Register16::DE => {
                 self.D = (v >> 8) as u8;
-                self.E = (v & 0xff) as u8;
+                self.E = (v & 0xFF) as u8;
             }
             Register16::HL => {
                 self.H = (v >> 8) as u8;
-                self.L = (v & 0xff) as u8;
+                self.L = (v & 0xFF) as u8;
             }
             Register16::SP => self.SP = v,
             Register16::PC => self.PC = v,
         }
+    }
+
+    fn add8(&mut self, reg: Register8, n: u8) {
+        let v = self.get8(reg) as u32 + n as u32;
+        if v > 0xFF {
+            // TODO: Overflow
+        }
+
+        self.set8(reg, (v & 0xFF) as u8)
+    }
+
+    fn sub8(&mut self, reg: Register8, n: u8) {
+        let mut v = self.get8(reg) as i32 - n as i32;
+        if v < 0 {
+            // TODO: Underflow
+            v += 0x100
+        }
+
+        self.set8(reg, (v & 0xFF) as u8)
     }
 }
 
@@ -140,10 +161,36 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cpu_reset() {
+    fn cpu_reset() {
         let mut cpu = Cpu::new();
         cpu.registers.A = 1;
         cpu.reset();
         assert_eq!(0, cpu.registers.A);
+    }
+
+    #[test]
+    fn registers_add() {
+        let mut reg = Registers::new();
+
+        reg.set8(Register8::A, 0);
+        reg.add8(Register8::A, 1);
+        assert_eq!(1, reg.A);
+
+        reg.set8(Register8::A, 0xFF);
+        reg.add8(Register8::A, 1);
+        assert_eq!(0, reg.A);
+    }
+
+    #[test]
+    fn registers_sub() {
+        let mut reg = Registers::new();
+
+        reg.set8(Register8::A, 0);
+        reg.sub8(Register8::A, 1);
+        assert_eq!(0xFF, reg.A);
+
+        reg.set8(Register8::A, 2);
+        reg.sub8(Register8::A, 1);
+        assert_eq!(1, reg.A);
     }
 }
