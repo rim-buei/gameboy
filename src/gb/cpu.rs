@@ -147,6 +147,10 @@ impl Registers {
         self.set8(reg, (v & 0xFF) as u8)
     }
 
+    fn inc8(&mut self, reg: Register8) -> &mut Self {
+        self.add8(reg, 1)
+    }
+
     fn sub8(&mut self, reg: Register8, n: u8) -> &mut Self {
         let mut v = self.get8(reg) as i32 - n as i32;
         if v < 0 {
@@ -155,6 +159,29 @@ impl Registers {
         }
 
         self.set8(reg, (v & 0xFF) as u8)
+    }
+
+    fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
+        let v = self.get16(reg) as u32 + n as u32;
+        if v > 0xFFFF {
+            // TODO: Overflow
+        }
+
+        self.set16(reg, (v & 0xFFFF) as u16)
+    }
+
+    fn inc16(&mut self, reg: Register16) -> &mut Self {
+        self.add16(reg, 1)
+    }
+
+    fn sub16(&mut self, reg: Register16, n: u16) -> &mut Self {
+        let mut v = self.get16(reg) as i32 - n as i32;
+        if v < 0 {
+            // TODO: Underflow
+            v += 0x10000
+        }
+
+        self.set16(reg, (v & 0xFFFF) as u16)
     }
 }
 
@@ -174,21 +201,33 @@ mod tests {
     fn registers_add() {
         let mut reg = Registers::new();
 
-        reg.set8(Register8::A, 0x00).add8(Register8::A, 2);
+        reg.set8(Register8::A, 0x00).add8(Register8::A, 0x02);
         assert_eq!(0x02, reg.A);
-
-        reg.set8(Register8::A, 0xFF).add8(Register8::A, 1);
+        reg.set8(Register8::A, 0xFF).add8(Register8::A, 0x01);
         assert_eq!(0x00, reg.A);
+
+        reg.set16(Register16::PC, 0x0000)
+            .add16(Register16::PC, 0x1000);
+        assert_eq!(0x1000, reg.PC);
+        reg.set16(Register16::PC, 0xFFFF)
+            .add16(Register16::PC, 0x0001);
+        assert_eq!(0x0000, reg.PC);
     }
 
     #[test]
     fn registers_sub() {
         let mut reg = Registers::new();
 
-        reg.set8(Register8::A, 0x03).sub8(Register8::A, 2);
+        reg.set8(Register8::A, 0x03).sub8(Register8::A, 0x02);
         assert_eq!(0x01, reg.A);
-
-        reg.set8(Register8::A, 0x00).sub8(Register8::A, 1);
+        reg.set8(Register8::A, 0x00).sub8(Register8::A, 0x01);
         assert_eq!(0xFF, reg.A);
+
+        reg.set16(Register16::PC, 0x1000)
+            .sub16(Register16::PC, 0x0001);
+        assert_eq!(0x0FFF, reg.PC);
+        reg.set16(Register16::PC, 0x0000)
+            .sub16(Register16::PC, 0x0001);
+        assert_eq!(0xFFFF, reg.PC);
     }
 }
