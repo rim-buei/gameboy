@@ -1,14 +1,13 @@
 #[allow(non_snake_case)]
 pub struct Registers {
     A: u8,
+    F: u8,
     B: u8,
     C: u8,
     D: u8,
     E: u8,
     H: u8,
     L: u8,
-
-    F: u8,
 
     SP: u16,
     PC: u16,
@@ -17,13 +16,13 @@ pub struct Registers {
 #[derive(Debug, Copy, Clone)]
 pub enum Register8 {
     A,
+    F,
     B,
     C,
     D,
     E,
     H,
     L,
-    F,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -32,22 +31,21 @@ pub enum Register16 {
     BC,
     DE,
     HL,
-    SP,
     PC,
+    SP,
 }
 
 impl Registers {
     pub fn new() -> Self {
         Registers {
             A: 0x00,
+            F: 0x00,
             B: 0x00,
             C: 0x00,
             D: 0x00,
             E: 0x00,
             H: 0x00,
             L: 0x00,
-
-            F: 0x00,
 
             PC: 0x0000,
             SP: 0x0000,
@@ -57,26 +55,26 @@ impl Registers {
     pub fn get8(&self, reg: Register8) -> u8 {
         match reg {
             Register8::A => self.A,
+            Register8::F => self.F,
             Register8::B => self.B,
             Register8::C => self.C,
             Register8::D => self.D,
             Register8::E => self.E,
             Register8::H => self.H,
             Register8::L => self.L,
-            Register8::F => self.F,
         }
     }
 
     pub fn set8(&mut self, reg: Register8, v: u8) -> &mut Self {
         match reg {
             Register8::A => self.A = v,
+            Register8::F => self.F = v,
             Register8::B => self.B = v,
             Register8::C => self.C = v,
             Register8::D => self.D = v,
             Register8::E => self.E = v,
             Register8::H => self.H = v,
             Register8::L => self.L = v,
-            Register8::F => self.F = v,
         }
         self
     }
@@ -110,8 +108,8 @@ impl Registers {
                 self.H = (v >> 8) as u8;
                 self.L = (v & 0xFF) as u8;
             }
-            Register16::SP => self.SP = v,
             Register16::PC => self.PC = v,
+            Register16::SP => self.SP = v,
         }
         self
     }

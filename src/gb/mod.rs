@@ -3,6 +3,6 @@ mod ram;
 mod rom;
 
 pub struct Context {
-    registers: cpu::registers::Registers,
+    registers: cpu::register::Registers,
     ram: ram::Ram,
 }

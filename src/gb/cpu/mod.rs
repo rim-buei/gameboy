@@ -1,14 +1,14 @@
-pub mod registers;
+pub mod register;
 
-mod instructions;
+mod instruction;
 
 use super::ram::Ram;
 
-use self::instructions::exec;
-use self::instructions::exec_ex;
-use self::registers::Register16;
-use self::registers::Register8;
-use self::registers::Registers;
+use self::instruction::exec;
+use self::instruction::exec_ex;
+use self::register::Register16;
+use self::register::Register8;
+use self::register::Registers;
 
 pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
     let addr = reg.get16(Register16::PC);
