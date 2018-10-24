@@ -1,27 +1,5 @@
-use super::ram::Ram;
-
-pub struct Cpu {
-    registers: Registers,
-}
-
-impl Cpu {
-    pub fn new() -> Self {
-        Cpu {
-            registers: Registers::new(),
-        }
-    }
-
-    pub fn step(&mut self, ram: &mut Ram) {
-        // TODO: Implementation
-    }
-
-    pub fn reset(&mut self) {
-        self.registers = Registers::new()
-    }
-}
-
 #[allow(non_snake_case)]
-struct Registers {
+pub struct Registers {
     A: u8,
     B: u8,
     C: u8,
@@ -37,7 +15,7 @@ struct Registers {
 }
 
 #[derive(Debug, Copy, Clone)]
-enum Register8 {
+pub enum Register8 {
     A,
     B,
     C,
@@ -49,7 +27,7 @@ enum Register8 {
 }
 
 #[derive(Debug, Copy, Clone)]
-enum Register16 {
+pub enum Register16 {
     AF,
     BC,
     DE,
@@ -59,7 +37,7 @@ enum Register16 {
 }
 
 impl Registers {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Registers {
             A: 0x00,
             B: 0x00,
@@ -76,7 +54,7 @@ impl Registers {
         }
     }
 
-    fn get8(&self, reg: Register8) -> u8 {
+    pub fn get8(&self, reg: Register8) -> u8 {
         match reg {
             Register8::A => self.A,
             Register8::B => self.B,
@@ -89,7 +67,7 @@ impl Registers {
         }
     }
 
-    fn set8(&mut self, reg: Register8, v: u8) -> &mut Self {
+    pub fn set8(&mut self, reg: Register8, v: u8) -> &mut Self {
         match reg {
             Register8::A => self.A = v,
             Register8::B => self.B = v,
@@ -103,7 +81,7 @@ impl Registers {
         self
     }
 
-    fn get16(&self, reg: Register16) -> u16 {
+    pub fn get16(&self, reg: Register16) -> u16 {
         match reg {
             Register16::AF => ((self.A as u16) << 8) + (self.F as u16),
             Register16::BC => ((self.B as u16) << 8) + (self.C as u16),
@@ -114,7 +92,7 @@ impl Registers {
         }
     }
 
-    fn set16(&mut self, reg: Register16, v: u16) -> &mut Self {
+    pub fn set16(&mut self, reg: Register16, v: u16) -> &mut Self {
         match reg {
             Register16::AF => {
                 self.A = (v >> 8) as u8;
@@ -138,7 +116,7 @@ impl Registers {
         self
     }
 
-    fn add8(&mut self, reg: Register8, n: u8) -> &mut Self {
+    pub fn add8(&mut self, reg: Register8, n: u8) -> &mut Self {
         let v = self.get8(reg) as u32 + n as u32;
         if v > 0xFF {
             // TODO: Overflow
@@ -147,11 +125,11 @@ impl Registers {
         self.set8(reg, (v & 0xFF) as u8)
     }
 
-    fn inc8(&mut self, reg: Register8) -> &mut Self {
+    pub fn inc8(&mut self, reg: Register8) -> &mut Self {
         self.add8(reg, 1)
     }
 
-    fn sub8(&mut self, reg: Register8, n: u8) -> &mut Self {
+    pub fn sub8(&mut self, reg: Register8, n: u8) -> &mut Self {
         let mut v = self.get8(reg) as i32 - n as i32;
         if v < 0 {
             // TODO: Underflow
@@ -161,7 +139,7 @@ impl Registers {
         self.set8(reg, (v & 0xFF) as u8)
     }
 
-    fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
+    pub fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
         let v = self.get16(reg) as u32 + n as u32;
         if v > 0xFFFF {
             // TODO: Overflow
@@ -170,11 +148,11 @@ impl Registers {
         self.set16(reg, (v & 0xFFFF) as u16)
     }
 
-    fn inc16(&mut self, reg: Register16) -> &mut Self {
+    pub fn inc16(&mut self, reg: Register16) -> &mut Self {
         self.add16(reg, 1)
     }
 
-    fn sub16(&mut self, reg: Register16, n: u16) -> &mut Self {
+    pub fn sub16(&mut self, reg: Register16, n: u16) -> &mut Self {
         let mut v = self.get16(reg) as i32 - n as i32;
         if v < 0 {
             // TODO: Underflow
@@ -188,14 +166,6 @@ impl Registers {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn cpu_reset() {
-        let mut cpu = Cpu::new();
-        cpu.registers.A = 1;
-        cpu.reset();
-        assert_eq!(0, cpu.registers.A);
-    }
 
     #[test]
     fn registers_add() {
