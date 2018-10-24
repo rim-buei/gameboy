@@ -201,8 +201,8 @@ mod tests {
     fn registers_add() {
         let mut reg = Registers::new();
 
-        reg.set8(Register8::A, 0x00).add8(Register8::A, 0x02);
-        assert_eq!(0x02, reg.A);
+        reg.set8(Register8::A, 0x00).add8(Register8::A, 0x10);
+        assert_eq!(0x10, reg.A);
         reg.set8(Register8::A, 0xFF).add8(Register8::A, 0x01);
         assert_eq!(0x00, reg.A);
 
@@ -218,14 +218,14 @@ mod tests {
     fn registers_sub() {
         let mut reg = Registers::new();
 
-        reg.set8(Register8::A, 0x03).sub8(Register8::A, 0x02);
-        assert_eq!(0x01, reg.A);
+        reg.set8(Register8::A, 0x20).sub8(Register8::A, 0x10);
+        assert_eq!(0x10, reg.A);
         reg.set8(Register8::A, 0x00).sub8(Register8::A, 0x01);
         assert_eq!(0xFF, reg.A);
 
-        reg.set16(Register16::PC, 0x1000)
-            .sub16(Register16::PC, 0x0001);
-        assert_eq!(0x0FFF, reg.PC);
+        reg.set16(Register16::PC, 0x2000)
+            .sub16(Register16::PC, 0x1000);
+        assert_eq!(0x1000, reg.PC);
         reg.set16(Register16::PC, 0x0000)
             .sub16(Register16::PC, 0x0001);
         assert_eq!(0xFFFF, reg.PC);
