@@ -168,7 +168,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn registers_add() {
+    fn test_registers_add() {
         let mut reg = Registers::new();
 
         reg.set8(Register8::A, 0x00).add8(Register8::A, 0x10);
@@ -185,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn registers_sub() {
+    fn test_registers_sub() {
         let mut reg = Registers::new();
 
         reg.set8(Register8::A, 0x20).sub8(Register8::A, 0x10);
