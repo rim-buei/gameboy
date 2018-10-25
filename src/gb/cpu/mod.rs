@@ -14,7 +14,7 @@ pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
     let addr = reg.get16(Register16::PC);
     let opcode = ram.read(addr);
 
-    let (bytes, cycles) = if opcode != 0xCE {
+    let (bytes, cycles) = if opcode != 0xCB {
         // 1-byte instruction
         exec(opcode, reg, ram)
     } else {
