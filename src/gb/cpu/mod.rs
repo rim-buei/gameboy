@@ -19,9 +19,7 @@ pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
         exec(opcode, reg, ram)
     } else {
         // 2-byte instruction
-        reg.inc16(Register16::PC);
-
-        let addr = reg.get16(Register16::PC);
+        let addr = reg.inc16(Register16::PC).get16(Register16::PC);
         let opcode = ram.read(addr);
 
         exec_ex(opcode, reg, ram)
