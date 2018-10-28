@@ -68,7 +68,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x3B => (0, 0),                                    // TODO: [DEC SP] [1  8] [- - - -]
         0x3C => (0, 0),                                    // TODO: [INC A] [1  4] [Z 0 H -]
         0x3D => (0, 0),                                    // TODO: [DEC A] [1  4] [Z 1 H -]
-        0x3E => (0, 0),                                    // TODO: [LD A,d8] [2  8] [- - - -]
+        0x3E => ld_r8_n8(reg, ram, Register8::A),          // [LD A,d8] [2  8] [- - - -]
         0x3F => (0, 0),                                    // TODO: [CCF] [1  4] [- 0 0 C]
         0x40 => ld_r8_r8(reg, Register8::B, Register8::B), // [LD B,B] [1  4] [- - - -]
         0x41 => ld_r8_r8(reg, Register8::B, Register8::C), // [LD B,C] [1  4] [- - - -]
