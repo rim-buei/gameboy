@@ -161,6 +161,16 @@ impl Registers {
     }
 }
 
+// Utility methods
+impl Registers {
+    pub fn get_PC(&self) -> u16 {
+        self.get16(Register16::PC)
+    }
+    pub fn inc_PC(&mut self) -> &mut Self {
+        self.inc16(Register16::PC)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
