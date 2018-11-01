@@ -122,13 +122,16 @@ impl Registers {
         self
     }
 
-    pub fn add8(&mut self, reg: Register8, n: u8) -> &mut Self {
-        let v = self.get8(reg) as u32 + n as u32;
-        if v > 0xFF {
-            // TODO: Overflow
-        }
+    pub fn add8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        let a = self.get8(reg);
+        let c = a.wrapping_add(b);
 
-        self.set8(reg, (v & 0xFF) as u8)
+        self.set_flag(Flag::Z, c == 0x00);
+        self.disable_flag(Flag::N);
+        self.set_flag(Flag::H, (c ^ b ^ a) & 0x10 == 0x10);
+        self.set_flag(Flag::C, c < a);
+
+        self.set8(reg, c)
     }
 
     pub fn inc8(&mut self, reg: Register8) -> &mut Self {
@@ -216,14 +219,56 @@ impl Registers {
 mod tests {
     use super::*;
 
+    struct Flags(bool, bool, bool, bool); // (Z, N, H, C)
+
     #[test]
-    fn test_registers_add() {
+    fn test_registers_add8() {
         let mut reg = Registers::new();
 
         reg.set8(Register8::A, 0x00).add8(Register8::A, 0x10);
         assert_eq!(0x10, reg.A);
         reg.set8(Register8::A, 0xFF).add8(Register8::A, 0x01);
         assert_eq!(0x00, reg.A);
+
+        // Flags
+        struct TestCase {
+            a: u8,
+            b: u8,
+            flags: Flags,
+        };
+        for case in &[
+            TestCase {
+                a: 0x00,
+                b: 0x01,
+                flags: Flags(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0F,
+                b: 0x01,
+                flags: Flags(false, false, true, false),
+            },
+            TestCase {
+                a: 0xF0,
+                b: 0x10,
+                flags: Flags(true, false, false, true),
+            },
+            TestCase {
+                a: 0xFF,
+                b: 0x01,
+                flags: Flags(true, false, true, true),
+            },
+        ] {
+            reg.set8(Register8::A, case.a).add8(Register8::A, case.b);
+            assert_eq!(case.flags.0, reg.test_flag(Flag::Z));
+            assert_eq!(case.flags.1, reg.test_flag(Flag::N));
+            assert_eq!(case.flags.2, reg.test_flag(Flag::H));
+            assert_eq!(case.flags.3, reg.test_flag(Flag::C));
+        }
+    }
+
+    #[test]
+    fn test_registers_add16() {
+        let mut reg = Registers::new();
 
         reg.set16(Register16::PC, 0x0000)
             .add16(Register16::PC, 0x1000);
