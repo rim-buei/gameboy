@@ -35,6 +35,13 @@ pub enum Register16 {
     SP,
 }
 
+pub enum Flag {
+    Z,
+    N,
+    H,
+    C,
+}
+
 impl Registers {
     pub fn new() -> Self {
         Registers {
@@ -159,10 +166,28 @@ impl Registers {
 
         self.set16(reg, (v & 0xFFFF) as u16)
     }
-}
 
-// Utility methods
-impl Registers {
+    // For F
+    pub fn enable_flag(&mut self, flag: Flag) -> &mut Self {
+        match flag {
+            Flag::Z => self.F |= 1 << 7,
+            Flag::N => self.F |= 1 << 6,
+            Flag::H => self.F |= 1 << 5,
+            Flag::C => self.F |= 1 << 4,
+        }
+        self
+    }
+    pub fn disable_flag(&mut self, flag: Flag) -> &mut Self {
+        match flag {
+            Flag::Z => self.F &= !(1 << 7),
+            Flag::N => self.F &= !(1 << 6),
+            Flag::H => self.F &= !(1 << 5),
+            Flag::C => self.F &= !(1 << 4),
+        }
+        self
+    }
+
+    // For PC
     pub fn get_PC(&self) -> u16 {
         self.get16(Register16::PC)
     }
@@ -207,5 +232,17 @@ mod tests {
         reg.set16(Register16::PC, 0x0000)
             .sub16(Register16::PC, 0x0001);
         assert_eq!(0xFFFF, reg.PC);
+    }
+
+    #[test]
+    fn test_registers_flag() {
+        let mut reg = Registers::new();
+
+        reg.enable_flag(Flag::Z);
+        assert_eq!(0b10000000, reg.F);
+        reg.enable_flag(Flag::N);
+        assert_eq!(0b11000000, reg.F);
+        reg.disable_flag(Flag::Z);
+        assert_eq!(0b01000000, reg.F);
     }
 }
