@@ -219,7 +219,7 @@ impl Registers {
 mod tests {
     use super::*;
 
-    struct Flags(bool, bool, bool, bool); // (Z, N, H, C)
+    struct FlagZNHC(bool, bool, bool, bool);
 
     #[test]
     fn test_registers_add8() {
@@ -234,28 +234,28 @@ mod tests {
         struct TestCase {
             a: u8,
             b: u8,
-            flags: Flags,
+            flags: FlagZNHC,
         };
         for case in &[
             TestCase {
                 a: 0x00,
                 b: 0x01,
-                flags: Flags(false, false, false, false),
+                flags: FlagZNHC(false, false, false, false),
             },
             TestCase {
                 a: 0x0F,
                 b: 0x01,
-                flags: Flags(false, false, true, false),
+                flags: FlagZNHC(false, false, true, false),
             },
             TestCase {
                 a: 0xF0,
                 b: 0x10,
-                flags: Flags(true, false, false, true),
+                flags: FlagZNHC(true, false, false, true),
             },
             TestCase {
                 a: 0xFF,
                 b: 0x01,
-                flags: Flags(true, false, true, true),
+                flags: FlagZNHC(true, false, true, true),
             },
         ] {
             reg.set8(Register8::A, case.a).add8(Register8::A, case.b);
