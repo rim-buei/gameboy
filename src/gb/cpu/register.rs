@@ -35,11 +35,12 @@ pub enum Register16 {
     SP,
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum Flag {
-    Z,
-    N,
-    H,
-    C,
+    Z, // Zero
+    N, // Subtract
+    H, // Half Carry
+    C, // Carry
 }
 
 impl Registers {
@@ -185,6 +186,21 @@ impl Registers {
             Flag::C => self.F &= !(1 << 4),
         }
         self
+    }
+    pub fn test_flag(&mut self, flag: Flag) -> bool {
+        match flag {
+            Flag::Z => (self.F & (1 << 7)) != 0,
+            Flag::N => (self.F & (1 << 6)) != 0,
+            Flag::H => (self.F & (1 << 5)) != 0,
+            Flag::C => (self.F & (1 << 4)) != 0,
+        }
+    }
+    pub fn set_flag(&mut self, flag: Flag, v: bool) -> &mut Self {
+        if v == true {
+            self.enable_flag(flag)
+        } else {
+            self.disable_flag(flag)
+        }
     }
 
     // For PC
