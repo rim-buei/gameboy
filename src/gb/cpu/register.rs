@@ -134,8 +134,12 @@ impl Registers {
         self.set8(reg, c)
     }
 
+    // inc8 internally calls self.add8(reg, 1) method
+    // but it does not affect the carry flag.
     pub fn inc8(&mut self, reg: Register8) -> &mut Self {
-        self.add8(reg, 1)
+        let temp = self.get_flag(Flag::C);
+        self.add8(reg, 1);
+        self.set_flag(Flag::C, temp)
     }
 
     pub fn sub8(&mut self, reg: Register8, n: u8) -> &mut Self {
@@ -190,7 +194,7 @@ impl Registers {
         }
         self
     }
-    pub fn test_flag(&mut self, flag: Flag) -> bool {
+    pub fn get_flag(&mut self, flag: Flag) -> bool {
         match flag {
             Flag::Z => (self.F & (1 << 7)) != 0,
             Flag::N => (self.F & (1 << 6)) != 0,
@@ -259,11 +263,19 @@ mod tests {
             },
         ] {
             reg.set8(Register8::A, case.a).add8(Register8::A, case.b);
-            assert_eq!(case.flags.0, reg.test_flag(Flag::Z));
-            assert_eq!(case.flags.1, reg.test_flag(Flag::N));
-            assert_eq!(case.flags.2, reg.test_flag(Flag::H));
-            assert_eq!(case.flags.3, reg.test_flag(Flag::C));
+            assert_eq!(case.flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(case.flags.1, reg.get_flag(Flag::N));
+            assert_eq!(case.flags.2, reg.get_flag(Flag::H));
+            assert_eq!(case.flags.3, reg.get_flag(Flag::C));
         }
+    }
+
+    #[test]
+    fn test_registers_inc8() {
+        let mut reg = Registers::new();
+
+        reg.set8(Register8::A, 0xFF).inc8(Register8::A);
+        assert_eq!(false, reg.get_flag(Flag::C));
     }
 
     #[test]
