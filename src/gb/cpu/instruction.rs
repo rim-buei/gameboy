@@ -6,7 +6,7 @@ use super::register::Registers;
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
     match opcode {
-        0x00 => (0, 0),                                // TODO: [NOP] [1  4] [- - - -]
+        0x00 => (1, 4),                                // [NOP] [1  4] [- - - -]
         0x01 => (0, 0),                                // TODO: [LD BC,d16] [3  12] [- - - -]
         0x02 => ld_addr_r8(reg, ram, R16::BC, R8::A),  // [LD (BC),A] [1  8] [- - - -]
         0x03 => (0, 0),                                // TODO: [INC BC] [1  8] [- - - -]
