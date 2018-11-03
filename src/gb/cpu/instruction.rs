@@ -166,30 +166,30 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x9D => sbc_r8_r8(reg, R8::A, R8::L),          // [SBC A,L] [1  4] [Z 1 H C]
         0x9E => sbc_r8_addr(reg, ram, R8::A, R16::HL), // [SBC A,(HL)] [1  8] [Z 1 H C]
         0x9F => sbc_r8_r8(reg, R8::A, R8::A),          // [SBC A,A] [1  4] [Z 1 H C]
-        0xA0 => (0, 0),                                // TODO: [AND B] [1  4] [Z 0 1 0]
-        0xA1 => (0, 0),                                // TODO: [AND C] [1  4] [Z 0 1 0]
-        0xA2 => (0, 0),                                // TODO: [AND D] [1  4] [Z 0 1 0]
-        0xA3 => (0, 0),                                // TODO: [AND E] [1  4] [Z 0 1 0]
-        0xA4 => (0, 0),                                // TODO: [AND H] [1  4] [Z 0 1 0]
-        0xA5 => (0, 0),                                // TODO: [AND L] [1  4] [Z 0 1 0]
-        0xA6 => (0, 0),                                // TODO: [AND (HL)] [1  8] [Z 0 1 0]
-        0xA7 => (0, 0),                                // TODO: [AND A] [1  4] [Z 0 1 0]
-        0xA8 => (0, 0),                                // TODO: [XOR B] [1  4] [Z 0 0 0]
-        0xA9 => (0, 0),                                // TODO: [XOR C] [1  4] [Z 0 0 0]
-        0xAA => (0, 0),                                // TODO: [XOR D] [1  4] [Z 0 0 0]
-        0xAB => (0, 0),                                // TODO: [XOR E] [1  4] [Z 0 0 0]
-        0xAC => (0, 0),                                // TODO: [XOR H] [1  4] [Z 0 0 0]
-        0xAD => (0, 0),                                // TODO: [XOR L] [1  4] [Z 0 0 0]
-        0xAE => (0, 0),                                // TODO: [XOR (HL)] [1  8] [Z 0 0 0]
-        0xAF => (0, 0),                                // TODO: [XOR A] [1  4] [Z 0 0 0]
-        0xB0 => (0, 0),                                // TODO: [OR B] [1  4] [Z 0 0 0]
-        0xB1 => (0, 0),                                // TODO: [OR C] [1  4] [Z 0 0 0]
-        0xB2 => (0, 0),                                // TODO: [OR D] [1  4] [Z 0 0 0]
-        0xB3 => (0, 0),                                // TODO: [OR E] [1  4] [Z 0 0 0]
-        0xB4 => (0, 0),                                // TODO: [OR H] [1  4] [Z 0 0 0]
-        0xB5 => (0, 0),                                // TODO: [OR L] [1  4] [Z 0 0 0]
-        0xB6 => (0, 0),                                // TODO: [OR (HL)] [1  8] [Z 0 0 0]
-        0xB7 => (0, 0),                                // TODO: [OR A] [1  4] [Z 0 0 0]
+        0xA0 => and_r8(reg, R8::B),                    // [AND B] [1  4] [Z 0 1 0]
+        0xA1 => and_r8(reg, R8::C),                    // [AND C] [1  4] [Z 0 1 0]
+        0xA2 => and_r8(reg, R8::D),                    // [AND D] [1  4] [Z 0 1 0]
+        0xA3 => and_r8(reg, R8::E),                    // [AND E] [1  4] [Z 0 1 0]
+        0xA4 => and_r8(reg, R8::H),                    // [AND H] [1  4] [Z 0 1 0]
+        0xA5 => and_r8(reg, R8::L),                    // [AND L] [1  4] [Z 0 1 0]
+        0xA6 => and_addr(reg, ram, R16::HL),           // [AND (HL)] [1  8] [Z 0 1 0]
+        0xA7 => and_r8(reg, R8::A),                    // [AND A] [1  4] [Z 0 1 0]
+        0xA8 => xor_r8(reg, R8::B),                    // [XOR B] [1  4] [Z 0 0 0]
+        0xA9 => xor_r8(reg, R8::C),                    // [XOR C] [1  4] [Z 0 0 0]
+        0xAA => xor_r8(reg, R8::D),                    // [XOR D] [1  4] [Z 0 0 0]
+        0xAB => xor_r8(reg, R8::E),                    // [XOR E] [1  4] [Z 0 0 0]
+        0xAC => xor_r8(reg, R8::H),                    // [XOR H] [1  4] [Z 0 0 0]
+        0xAD => xor_r8(reg, R8::L),                    // [XOR L] [1  4] [Z 0 0 0]
+        0xAE => xor_addr(reg, ram, R16::HL),           // [XOR (HL)] [1  8] [Z 0 0 0]
+        0xAF => xor_r8(reg, R8::A),                    // [XOR A] [1  4] [Z 0 0 0]
+        0xB0 => or_r8(reg, R8::B),                     // [OR B] [1  4] [Z 0 0 0]
+        0xB1 => or_r8(reg, R8::C),                     // [OR C] [1  4] [Z 0 0 0]
+        0xB2 => or_r8(reg, R8::D),                     // [OR D] [1  4] [Z 0 0 0]
+        0xB3 => or_r8(reg, R8::E),                     // [OR E] [1  4] [Z 0 0 0]
+        0xB4 => or_r8(reg, R8::H),                     // [OR H] [1  4] [Z 0 0 0]
+        0xB5 => or_r8(reg, R8::L),                     // [OR L] [1  4] [Z 0 0 0]
+        0xB6 => or_addr(reg, ram, R16::HL),            // [OR (HL)] [1  8] [Z 0 0 0]
+        0xB7 => or_r8(reg, R8::A),                     // [OR A] [1  4] [Z 0 0 0]
         0xB8 => (0, 0),                                // TODO: [CP B] [1  4] [Z 1 H C]
         0xB9 => (0, 0),                                // TODO: [CP C] [1  4] [Z 1 H C]
         0xBA => (0, 0),                                // TODO: [CP D] [1  4] [Z 1 H C]
@@ -236,7 +236,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xE3 => unsupported(opcode),                   // [Unsupported]
         0xE4 => unsupported(opcode),                   // [Unsupported]
         0xE5 => (0, 0),                                // TODO: [PUSH HL] [1  16] [- - - -]
-        0xE6 => (0, 0),                                // TODO: [AND d8] [2  8] [Z 0 1 0]
+        0xE6 => and_n8(reg, ram),                      // [AND d8] [2  8] [Z 0 1 0]
         0xE7 => (0, 0),                                // TODO: [RST 20H] [1  16] [- - - -]
         0xE8 => (0, 0),                                // TODO: [ADD SP,r8] [2  16] [0 0 H C]
         0xE9 => (0, 0),                                // TODO: [JP (HL)] [1  4] [- - - -]
@@ -244,7 +244,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xEB => unsupported(opcode),                   // [Unsupported]
         0xEC => unsupported(opcode),                   // [Unsupported]
         0xED => unsupported(opcode),                   // [Unsupported]
-        0xEE => (0, 0),                                // TODO: [XOR d8] [2  8] [Z 0 0 0]
+        0xEE => xor_n8(reg, ram),                      // [XOR d8] [2  8] [Z 0 0 0]
         0xEF => (0, 0),                                // TODO: [RST 28H] [1  16] [- - - -]
         0xF0 => (0, 0),                                // TODO: [LDH A,(a8)] [2  12] [- - - -]
         0xF1 => (0, 0),                                // TODO: [POP AF] [1  12] [Z N H C]
@@ -252,7 +252,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF3 => (0, 0),                                // TODO: [DI] [1  4] [- - - -]
         0xF4 => unsupported(opcode),                   // [Unsupported]
         0xF5 => (0, 0),                                // TODO: [PUSH AF] [1  16] [- - - -]
-        0xF6 => (0, 0),                                // TODO: [OR d8] [2  8] [Z 0 0 0]
+        0xF6 => or_n8(reg, ram),                       // [OR d8] [2  8] [Z 0 0 0]
         0xF7 => (0, 0),                                // TODO: [RST 30H] [1  16] [- - - -]
         0xF8 => (0, 0),                                // TODO: [LD HL,SP+r8] [2  12] [0 0 H C]
         0xF9 => (0, 0),                                // TODO: [LD SP,HL] [1  8] [- - - -]
@@ -621,6 +621,51 @@ fn sbc_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8
 fn dec_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
     reg.dec8(lhs);
     (1, 4)
+}
+
+fn and_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
+    reg.and8(R8::A, reg.get8(rhs));
+    (1, 4)
+}
+
+fn and_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
+    reg.and8(R8::A, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn and_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
+    reg.and8(R8::A, ram.read(reg.get_PC() + 1));
+    (2, 8)
+}
+
+fn or_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
+    reg.or8(R8::A, reg.get8(rhs));
+    (1, 4)
+}
+
+fn or_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
+    reg.or8(R8::A, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn or_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
+    reg.or8(R8::A, ram.read(reg.get_PC() + 1));
+    (2, 8)
+}
+
+fn xor_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
+    reg.xor8(R8::A, reg.get8(rhs));
+    (1, 4)
+}
+
+fn xor_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
+    reg.xor8(R8::A, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn xor_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
+    reg.xor8(R8::A, ram.read(reg.get_PC() + 1));
+    (2, 8)
 }
 
 #[cfg(test)]
