@@ -166,10 +166,6 @@ impl Registers {
         self.set16(reg, (v & 0xFFFF) as u16)
     }
 
-    pub fn inc16(&mut self, reg: Register16) -> &mut Self {
-        self.add16(reg, 1)
-    }
-
     pub fn sub8(&mut self, reg: Register8, b: u8) -> &mut Self {
         let a = self.get8(reg);
         let c = a.wrapping_sub(b);
@@ -240,7 +236,7 @@ impl Registers {
         self.get16(Register16::PC)
     }
     pub fn inc_PC(&mut self) -> &mut Self {
-        self.inc16(Register16::PC)
+        self.set16(Register16::PC, self.get16(Register16::PC).wrapping_add(1))
     }
 }
 
