@@ -217,6 +217,42 @@ impl Registers {
         self.set16(reg, (v & 0xFFFF) as u16)
     }
 
+    pub fn and8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        let a = self.get8(reg);
+        let c = a & b;
+
+        self.set_flag(Flag::Z, c == 0x00);
+        self.disable_flag(Flag::N);
+        self.enable_flag(Flag::H);
+        self.disable_flag(Flag::C);
+
+        self.set8(reg, c)
+    }
+
+    pub fn or8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        let a = self.get8(reg);
+        let c = a | b;
+
+        self.set_flag(Flag::Z, c == 0x00);
+        self.disable_flag(Flag::N);
+        self.disable_flag(Flag::H);
+        self.disable_flag(Flag::C);
+
+        self.set8(reg, c)
+    }
+
+    pub fn xor8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        let a = self.get8(reg);
+        let c = a ^ b;
+
+        self.set_flag(Flag::Z, c == 0x00);
+        self.disable_flag(Flag::N);
+        self.disable_flag(Flag::H);
+        self.disable_flag(Flag::C);
+
+        self.set8(reg, c)
+    }
+
     // For F
     pub fn enable_flag(&mut self, flag: Flag) -> &mut Self {
         match flag {
@@ -504,6 +540,78 @@ mod tests {
         reg.set16(Register16::PC, 0x0000)
             .sub16(Register16::PC, 0x0001);
         assert_eq!(0xFFFF, reg.PC);
+    }
+
+    #[test]
+    fn test_registers_logical8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            and: u8,
+            and_flags: FlagZNHC,
+            or: u8,
+            or_flags: FlagZNHC,
+            xor: u8,
+            xor_flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x01,
+                b: 0x01,
+                and: 0x01,
+                and_flags: FlagZNHC(false, false, true, false),
+                or: 0x01,
+                or_flags: FlagZNHC(false, false, false, false),
+                xor: 0x00,
+                xor_flags: FlagZNHC(true, false, false, false),
+            },
+            TestCase {
+                a: 0x01,
+                b: 0x00,
+                and: 0x00,
+                and_flags: FlagZNHC(true, false, true, false),
+                or: 0x01,
+                or_flags: FlagZNHC(false, false, false, false),
+                xor: 0x01,
+                xor_flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x00,
+                and: 0x00,
+                and_flags: FlagZNHC(true, false, true, false),
+                or: 0x00,
+                or_flags: FlagZNHC(true, false, false, false),
+                xor: 0x00,
+                xor_flags: FlagZNHC(true, false, false, false),
+            },
+        ] {
+            let mut reg = Registers::new();
+
+            reg.set8(Register8::A, test.a);
+            reg.and8(Register8::A, test.b);
+            assert_eq!(test.and, reg.get8(Register8::A));
+            assert_eq!(test.and_flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.and_flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.and_flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.and_flags.3, reg.get_flag(Flag::C));
+
+            reg.set8(Register8::A, test.a);
+            reg.or8(Register8::A, test.b);
+            assert_eq!(test.or, reg.get8(Register8::A));
+            assert_eq!(test.or_flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.or_flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.or_flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.or_flags.3, reg.get_flag(Flag::C));
+
+            reg.set8(Register8::A, test.a);
+            reg.xor8(Register8::A, test.b);
+            assert_eq!(test.xor, reg.get8(Register8::A));
+            assert_eq!(test.xor_flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.xor_flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.xor_flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.xor_flags.3, reg.get_flag(Flag::C));
+        }
     }
 
     #[test]
