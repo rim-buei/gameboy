@@ -142,14 +142,14 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x85 => add_r8_r8(reg, R8::A, R8::L),          // [ADD A,L] [1  4] [Z 0 H C]
         0x86 => add_r8_addr(reg, ram, R8::A, R16::HL), // [ADD A,(HL)] [1  8] [Z 0 H C]
         0x87 => add_r8_r8(reg, R8::A, R8::A),          // [ADD A,A] [1  4] [Z 0 H C]
-        0x88 => (0, 0),                                // TODO: [ADC A,B] [1  4] [Z 0 H C]
-        0x89 => (0, 0),                                // TODO: [ADC A,C] [1  4] [Z 0 H C]
-        0x8A => (0, 0),                                // TODO: [ADC A,D] [1  4] [Z 0 H C]
-        0x8B => (0, 0),                                // TODO: [ADC A,E] [1  4] [Z 0 H C]
-        0x8C => (0, 0),                                // TODO: [ADC A,H] [1  4] [Z 0 H C]
-        0x8D => (0, 0),                                // TODO: [ADC A,L] [1  4] [Z 0 H C]
-        0x8E => (0, 0),                                // TODO: [ADC A,(HL)] [1  8] [Z 0 H C]
-        0x8F => (0, 0),                                // TODO: [ADC A,A] [1  4] [Z 0 H C]
+        0x88 => adc_r8_r8(reg, R8::A, R8::B),          // [ADC A,B] [1  4] [Z 0 H C]
+        0x89 => adc_r8_r8(reg, R8::A, R8::C),          // [ADC A,C] [1  4] [Z 0 H C]
+        0x8A => adc_r8_r8(reg, R8::A, R8::D),          // [ADC A,D] [1  4] [Z 0 H C]
+        0x8B => adc_r8_r8(reg, R8::A, R8::E),          // [ADC A,E] [1  4] [Z 0 H C]
+        0x8C => adc_r8_r8(reg, R8::A, R8::H),          // [ADC A,H] [1  4] [Z 0 H C]
+        0x8D => adc_r8_r8(reg, R8::A, R8::L),          // [ADC A,L] [1  4] [Z 0 H C]
+        0x8E => adc_r8_addr(reg, ram, R8::A, R16::HL), // [ADC A,(HL)] [1  8] [Z 0 H C]
+        0x8F => adc_r8_r8(reg, R8::A, R8::A),          // [ADC A,A] [1  4] [Z 0 H C]
         0x90 => (0, 0),                                // TODO: [SUB B] [1  4] [Z 1 H C]
         0x91 => (0, 0),                                // TODO: [SUB C] [1  4] [Z 1 H C]
         0x92 => (0, 0),                                // TODO: [SUB D] [1  4] [Z 1 H C]
@@ -209,10 +209,10 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xC8 => (0, 0),                                // TODO: [RET Z] [1  20/8] [- - - -]
         0xC9 => (0, 0),                                // TODO: [RET] [1  16] [- - - -]
         0xCA => (0, 0),                                // TODO: [JP Z,a16] [3  16/12] [- - - -]
-        0xCB => (0, 0),                                // TODO: [PREFIX CB] [1  4] [- - - -]
+        0xCB => unsupported(opcode),                   // [PREFIX CB] [1  4] [- - - -]
         0xCC => (0, 0),                                // TODO: [CALL Z,a16] [3  24/12] [- - - -]
         0xCD => (0, 0),                                // TODO: [CALL a16] [3  24] [- - - -]
-        0xCE => (0, 0),                                // TODO: [ADC A,d8] [2  8] [Z 0 H C]
+        0xCE => adc_r8_n8(reg, ram, R8::A),            // [ADC A,d8] [2  8] [Z 0 H C]
         0xCF => (0, 0),                                // TODO: [RST 08H] [1  16] [- - - -]
         0xD0 => (0, 0),                                // TODO: [RET NC] [1  20/8] [- - - -]
         0xD1 => (0, 0),                                // TODO: [POP DE] [1  12] [- - - -]
@@ -565,6 +565,21 @@ fn add_r8_r8(reg: &mut Registers, lhs: R8, rhs: R8) -> (u8, u8) {
 
 fn add_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8) {
     reg.add8(lhs, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn adc_r8_n8(reg: &mut Registers, ram: &mut Ram, lhs: R8) -> (u8, u8) {
+    reg.adc8(lhs, ram.read(reg.get_PC() + 1));
+    (2, 8)
+}
+
+fn adc_r8_r8(reg: &mut Registers, lhs: R8, rhs: R8) -> (u8, u8) {
+    reg.adc8(lhs, reg.get8(rhs));
+    (1, 4)
+}
+
+fn adc_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8) {
+    reg.adc8(lhs, ram.read(reg.get16(rhs)));
     (1, 8)
 }
 
