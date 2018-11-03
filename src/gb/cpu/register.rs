@@ -136,13 +136,16 @@ impl Registers {
 
     pub fn adc8(&mut self, reg: Register8, b: u8) -> &mut Self {
         if self.get_flag(Flag::C) {
+            // This implementation might be wrong...?
+            let a4 = self.get8(reg) & 0x0F;
+            let b4 = b & 0x0F;
+
             self.add8(reg, 1);
-            let h = self.get_flag(Flag::H);
-            let c = self.get_flag(Flag::C);
+            let carry = self.get_flag(Flag::C);
 
             self.add8(reg, b);
-            self.set_flag(Flag::H, self.get_flag(Flag::H) || h);
-            self.set_flag(Flag::C, self.get_flag(Flag::C) || c);
+            self.set_flag(Flag::H, (a4 + b4 + 1) > 0x0F);
+            self.set_flag(Flag::C, self.get_flag(Flag::C) || carry);
             self
         } else {
             self.add8(reg, b)
@@ -176,6 +179,24 @@ impl Registers {
         self.set_flag(Flag::C, a < b);
 
         self.set8(reg, c)
+    }
+
+    pub fn sbc8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        if self.get_flag(Flag::C) {
+            // This implementation might be wrong...?
+            let a = self.get8(reg);
+
+            self.sub8(reg, 1);
+            let carry = self.get_flag(Flag::C);
+
+            self.sub8(reg, b);
+            let c = self.get8(reg);
+            self.set_flag(Flag::H, (c ^ b ^ a) & 0x10 == 0x10);
+            self.set_flag(Flag::C, self.get_flag(Flag::C) || carry);
+            self
+        } else {
+            self.sub8(reg, b)
+        }
     }
 
     // dec8 internally calls self.dec8(reg, 1) method
@@ -314,22 +335,22 @@ mod tests {
                 flags: FlagZNHC(false, false, true, false),
             },
             TestCase {
-                a: 0x0F,
-                b: 0x01,
-                c: 0x11,
-                flags: FlagZNHC(false, false, true, false),
-            },
-            TestCase {
-                a: 0xF0,
+                a: 0x00,
                 b: 0x0F,
-                c: 0x00,
-                flags: FlagZNHC(true, false, true, true),
+                c: 0x10,
+                flags: FlagZNHC(false, false, true, false),
             },
             TestCase {
                 a: 0xF0,
                 b: 0x10,
                 c: 0x01,
                 flags: FlagZNHC(false, false, false, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0xFF,
+                c: 0x00,
+                flags: FlagZNHC(true, false, true, true),
             },
         ] {
             let mut reg = Registers::new();
@@ -387,8 +408,14 @@ mod tests {
                 flags: FlagZNHC(false, true, true, false),
             },
             TestCase {
-                a: 0x01,
-                b: 0x02,
+                a: 0x00,
+                b: 0x10,
+                c: 0xF0,
+                flags: FlagZNHC(false, true, false, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x01,
                 c: 0xFF,
                 flags: FlagZNHC(false, true, true, true),
             },
@@ -397,6 +424,59 @@ mod tests {
             reg.set8(Register8::A, test.a);
 
             reg.sub8(Register8::A, test.b);
+            assert_eq!(test.c, reg.get8(Register8::A));
+            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+        }
+    }
+
+    #[test]
+    fn test_registers_sbc8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x03,
+                b: 0x01,
+                c: 0x01,
+                flags: FlagZNHC(false, true, false, false),
+            },
+            TestCase {
+                a: 0x11,
+                b: 0x01,
+                c: 0x0F,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x10,
+                b: 0x01,
+                c: 0x0E,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x0F,
+                c: 0xF0,
+                flags: FlagZNHC(false, true, true, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0xFF,
+                c: 0x00,
+                flags: FlagZNHC(true, true, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            reg.enable_flag(Flag::C);
+            reg.set8(Register8::A, test.a);
+
+            reg.sbc8(Register8::A, test.b);
             assert_eq!(test.c, reg.get8(Register8::A));
             assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
             assert_eq!(test.flags.1, reg.get_flag(Flag::N));
