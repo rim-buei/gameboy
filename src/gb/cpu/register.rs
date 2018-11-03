@@ -137,7 +137,6 @@ impl Registers {
 
     pub fn adc8(&mut self, reg: Register8, b: u8) -> &mut Self {
         if self.get_flag(Flag::C) {
-            // This implementation might be wrong...?
             let a4 = self.get8(reg) & 0x0F;
             let b4 = b & 0x0F;
 
@@ -145,8 +144,8 @@ impl Registers {
             let carry = self.get_flag(Flag::C);
 
             self.add8(reg, b);
-            self.set_flag(Flag::H, (a4 + b4 + 1) > 0x0F);
-            self.set_flag(Flag::C, self.get_flag(Flag::C) || carry);
+            self.set_flag(Flag::H, (a4 + b4 + 1) > 0x0F); // This might be wrong...?
+            self.set_flag(Flag::C, self.get_flag(Flag::C) | carry);
             self
         } else {
             self.add8(reg, b)
@@ -184,7 +183,6 @@ impl Registers {
 
     pub fn sbc8(&mut self, reg: Register8, b: u8) -> &mut Self {
         if self.get_flag(Flag::C) {
-            // This implementation might be wrong...?
             let a = self.get8(reg);
 
             self.sub8(reg, 1);
@@ -192,8 +190,8 @@ impl Registers {
 
             self.sub8(reg, b);
             let c = self.get8(reg);
-            self.set_flag(Flag::H, (c ^ b ^ a) & 0x10 == 0x10);
-            self.set_flag(Flag::C, self.get_flag(Flag::C) || carry);
+            self.set_flag(Flag::H, (c ^ b ^ a) & 0x10 == 0x10); // This might be wrong...?
+            self.set_flag(Flag::C, self.get_flag(Flag::C) | carry);
             self
         } else {
             self.sub8(reg, b)
