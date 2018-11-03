@@ -713,7 +713,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_r8_addr() {
+    fn test_add_addr() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0x01]);
         reg.set16(R16::HL, 0x01);
@@ -724,7 +724,7 @@ mod tests {
     }
 
     #[test]
-    fn test_add_r8_n8() {
+    fn test_add_n8() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0x01]);
         reg.set8(R8::A, 0x0F);
@@ -734,7 +734,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sub_r8_addr() {
+    fn test_sub_addr() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0x01]);
         reg.set16(R16::HL, 0x01);
@@ -745,7 +745,7 @@ mod tests {
     }
 
     #[test]
-    fn test_sub_r8_n8() {
+    fn test_sub_n8() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0x01]);
         reg.set8(R8::A, 0x10);
