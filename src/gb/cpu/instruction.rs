@@ -11,7 +11,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x02 => ld_addr_r8(reg, ram, R16::BC, R8::A),  // [LD (BC),A] [1  8] [- - - -]
         0x03 => (0, 0),                                // TODO: [INC BC] [1  8] [- - - -]
         0x04 => inc_r8(reg, R8::B),                    // [INC B] [1  4] [Z 0 H -]
-        0x05 => (0, 0),                                // TODO: [DEC B] [1  4] [Z 1 H -]
+        0x05 => dec_r8(reg, R8::B),                    // [DEC B] [1  4] [Z 1 H -]
         0x06 => ld_r8_n8(reg, ram, R8::B),             // [LD B,d8] [2  8] [- - - -]
         0x07 => (0, 0),                                // TODO: [RLCA] [1  4] [0 0 0 C]
         0x08 => (0, 0),                                // TODO: [LD (a16),SP] [3  20] [- - - -]
@@ -19,7 +19,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x0A => ld_r8_addr(reg, ram, R8::A, R16::BC),  // [LD A,(BC)] [1  8] [- - - -]
         0x0B => (0, 0),                                // TODO: [DEC BC] [1  8] [- - - -]
         0x0C => inc_r8(reg, R8::C),                    // [INC C] [1  4] [Z 0 H -]
-        0x0D => (0, 0),                                // TODO: [DEC C] [1  4] [Z 1 H -]
+        0x0D => dec_r8(reg, R8::C),                    // [DEC C] [1  4] [Z 1 H -]
         0x0E => ld_r8_n8(reg, ram, R8::C),             // [LD C,d8] [2  8] [- - - -]
         0x0F => (0, 0),                                // TODO: [RRCA] [1  4] [0 0 0 C]
         0x10 => (0, 0),                                // TODO: [STOP 0] [2  4] [- - - -]
@@ -27,7 +27,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x12 => ld_addr_r8(reg, ram, R16::DE, R8::A),  // [LD (DE),A] [1  8] [- - - -]
         0x13 => (0, 0),                                // TODO: [INC DE] [1  8] [- - - -]
         0x14 => inc_r8(reg, R8::D),                    // [INC D] [1  4] [Z 0 H -]
-        0x15 => (0, 0),                                // TODO: [DEC D] [1  4] [Z 1 H -]
+        0x15 => dec_r8(reg, R8::D),                    // [DEC D] [1  4] [Z 1 H -]
         0x16 => ld_r8_n8(reg, ram, R8::D),             // [LD D,d8] [2  8] [- - - -]
         0x17 => (0, 0),                                // TODO: [RLA] [1  4] [0 0 0 C]
         0x18 => (0, 0),                                // TODO: [JR r8] [2  12] [- - - -]
@@ -35,7 +35,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x1A => ld_r8_addr(reg, ram, R8::A, R16::DE),  // [LD A,(DE)] [1  8] [- - - -]
         0x1B => (0, 0),                                // TODO: [DEC DE] [1  8] [- - - -]
         0x1C => inc_r8(reg, R8::E),                    // [INC E] [1  4] [Z 0 H -]
-        0x1D => (0, 0),                                // TODO: [DEC E] [1  4] [Z 1 H -]
+        0x1D => dec_r8(reg, R8::E),                    // [DEC E] [1  4] [Z 1 H -]
         0x1E => ld_r8_n8(reg, ram, R8::E),             // [LD E,d8] [2  8] [- - - -]
         0x1F => (0, 0),                                // TODO: [RRA] [1  4] [0 0 0 C]
         0x20 => (0, 0),                                // TODO: [JR NZ,r8] [2  12/8] [- - - -]
@@ -43,7 +43,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x22 => (0, 0),                                // TODO: [LD (HL+),A] [1  8] [- - - -]
         0x23 => (0, 0),                                // TODO: [INC HL] [1  8] [- - - -]
         0x24 => inc_r8(reg, R8::H),                    // [INC H] [1  4] [Z 0 H -]
-        0x25 => (0, 0),                                // TODO: [DEC H] [1  4] [Z 1 H -]
+        0x25 => dec_r8(reg, R8::H),                    // [DEC H] [1  4] [Z 1 H -]
         0x26 => ld_r8_n8(reg, ram, R8::H),             // [LD H,d8] [2  8] [- - - -]
         0x27 => (0, 0),                                // TODO: [DAA] [1  4] [Z - 0 C]
         0x28 => (0, 0),                                // TODO: [JR Z,r8] [2  12/8] [- - - -]
@@ -51,7 +51,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x2A => (0, 0),                                // TODO: [LD A,(HL+)] [1  8] [- - - -]
         0x2B => (0, 0),                                // TODO: [DEC HL] [1  8] [- - - -]
         0x2C => inc_r8(reg, R8::L),                    // [INC L] [1  4] [Z 0 H -]
-        0x2D => (0, 0),                                // TODO: [DEC L] [1  4] [Z 1 H -]
+        0x2D => dec_r8(reg, R8::L),                    // [DEC L] [1  4] [Z 1 H -]
         0x2E => ld_r8_n8(reg, ram, R8::L),             // [LD L,d8] [2  8] [- - - -]
         0x2F => (0, 0),                                // TODO: [CPL] [1  4] [- 1 1 -]
         0x30 => (0, 0),                                // TODO: [JR NC,r8] [2  12/8] [- - - -]
@@ -67,7 +67,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x3A => (0, 0),                                // TODO: [LD A,(HL-)] [1  8] [- - - -]
         0x3B => (0, 0),                                // TODO: [DEC SP] [1  8] [- - - -]
         0x3C => inc_r8(reg, R8::A),                    // [INC A] [1  4] [Z 0 H -]
-        0x3D => (0, 0),                                // TODO: [DEC A] [1  4] [Z 1 H -]
+        0x3D => dec_r8(reg, R8::A),                    // [DEC A] [1  4] [Z 1 H -]
         0x3E => ld_r8_n8(reg, ram, R8::A),             // [LD A,d8] [2  8] [- - - -]
         0x3F => (0, 0),                                // TODO: [CCF] [1  4] [- 0 0 C]
         0x40 => ld_r8_r8(reg, R8::B, R8::B),           // [LD B,B] [1  4] [- - - -]
@@ -150,22 +150,22 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x8D => adc_r8_r8(reg, R8::A, R8::L),          // [ADC A,L] [1  4] [Z 0 H C]
         0x8E => adc_r8_addr(reg, ram, R8::A, R16::HL), // [ADC A,(HL)] [1  8] [Z 0 H C]
         0x8F => adc_r8_r8(reg, R8::A, R8::A),          // [ADC A,A] [1  4] [Z 0 H C]
-        0x90 => (0, 0),                                // TODO: [SUB B] [1  4] [Z 1 H C]
-        0x91 => (0, 0),                                // TODO: [SUB C] [1  4] [Z 1 H C]
-        0x92 => (0, 0),                                // TODO: [SUB D] [1  4] [Z 1 H C]
-        0x93 => (0, 0),                                // TODO: [SUB E] [1  4] [Z 1 H C]
-        0x94 => (0, 0),                                // TODO: [SUB H] [1  4] [Z 1 H C]
-        0x95 => (0, 0),                                // TODO: [SUB L] [1  4] [Z 1 H C]
-        0x96 => (0, 0),                                // TODO: [SUB (HL)] [1  8] [Z 1 H C]
-        0x97 => (0, 0),                                // TODO: [SUB A] [1  4] [Z 1 H C]
-        0x98 => (0, 0),                                // TODO: [SBC A,B] [1  4] [Z 1 H C]
-        0x99 => (0, 0),                                // TODO: [SBC A,C] [1  4] [Z 1 H C]
-        0x9A => (0, 0),                                // TODO: [SBC A,D] [1  4] [Z 1 H C]
-        0x9B => (0, 0),                                // TODO: [SBC A,E] [1  4] [Z 1 H C]
-        0x9C => (0, 0),                                // TODO: [SBC A,H] [1  4] [Z 1 H C]
-        0x9D => (0, 0),                                // TODO: [SBC A,L] [1  4] [Z 1 H C]
-        0x9E => (0, 0),                                // TODO: [SBC A,(HL)] [1  8] [Z 1 H C]
-        0x9F => (0, 0),                                // TODO: [SBC A,A] [1  4] [Z 1 H C]
+        0x90 => sub_r8_r8(reg, R8::A, R8::B),          // [SUB A,B] [1  4] [Z 1 H C]
+        0x91 => sub_r8_r8(reg, R8::A, R8::C),          // [SUB A,C] [1  4] [Z 1 H C]
+        0x92 => sub_r8_r8(reg, R8::A, R8::D),          // [SUB A,D] [1  4] [Z 1 H C]
+        0x93 => sub_r8_r8(reg, R8::A, R8::E),          // [SUB A,E] [1  4] [Z 1 H C]
+        0x94 => sub_r8_r8(reg, R8::A, R8::H),          // [SUB A,H] [1  4] [Z 1 H C]
+        0x95 => sub_r8_r8(reg, R8::A, R8::L),          // [SUB A,L] [1  4] [Z 1 H C]
+        0x96 => sub_r8_addr(reg, ram, R8::A, R16::HL), // [SUB A,(HL)] [1  8] [Z 1 H C]
+        0x97 => sub_r8_r8(reg, R8::A, R8::A),          // [SUB A,A] [1  4] [Z 1 H C]
+        0x98 => sbc_r8_r8(reg, R8::A, R8::B),          // [SBC A,B] [1  4] [Z 1 H C]
+        0x99 => sbc_r8_r8(reg, R8::A, R8::C),          // [SBC A,C] [1  4] [Z 1 H C]
+        0x9A => sbc_r8_r8(reg, R8::A, R8::D),          // [SBC A,D] [1  4] [Z 1 H C]
+        0x9B => sbc_r8_r8(reg, R8::A, R8::E),          // [SBC A,E] [1  4] [Z 1 H C]
+        0x9C => sbc_r8_r8(reg, R8::A, R8::H),          // [SBC A,H] [1  4] [Z 1 H C]
+        0x9D => sbc_r8_r8(reg, R8::A, R8::L),          // [SBC A,L] [1  4] [Z 1 H C]
+        0x9E => sbc_r8_addr(reg, ram, R8::A, R16::HL), // [SBC A,(HL)] [1  8] [Z 1 H C]
+        0x9F => sbc_r8_r8(reg, R8::A, R8::A),          // [SBC A,A] [1  4] [Z 1 H C]
         0xA0 => (0, 0),                                // TODO: [AND B] [1  4] [Z 0 1 0]
         0xA1 => (0, 0),                                // TODO: [AND C] [1  4] [Z 0 1 0]
         0xA2 => (0, 0),                                // TODO: [AND D] [1  4] [Z 0 1 0]
@@ -220,7 +220,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD3 => unsupported(opcode),                   // [Unsupported]
         0xD4 => (0, 0),                                // TODO: [CALL NC,a16] [3  24/12] [- - - -]
         0xD5 => (0, 0),                                // TODO: [PUSH DE] [1  16] [- - - -]
-        0xD6 => (0, 0),                                // TODO: [SUB d8] [2  8] [Z 1 H C]
+        0xD6 => sub_r8_n8(reg, ram, R8::A),            // [SUB A,d8] [2  8] [Z 1 H C]
         0xD7 => (0, 0),                                // TODO: [RST 10H] [1  16] [- - - -]
         0xD8 => (0, 0),                                // TODO: [RET C] [1  20/8] [- - - -]
         0xD9 => (0, 0),                                // TODO: [RETI] [1  16] [- - - -]
@@ -228,7 +228,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xDB => unsupported(opcode),                   // [Unsupported]
         0xDC => (0, 0),                                // TODO: [CALL C,a16] [3  24/12] [- - - -]
         0xDD => unsupported(opcode),                   // [Unsupported]
-        0xDE => (0, 0),                                // TODO: [SBC A,d8] [2  8] [Z 1 H C]
+        0xDE => sbc_r8_n8(reg, ram, R8::A),            // [SBC A,d8] [2  8] [Z 1 H C]
         0xDF => (0, 0),                                // TODO: [RST 18H] [1  16] [- - - -]
         0xE0 => (0, 0),                                // TODO: [LDH (a8),A] [2  12] [- - - -]
         0xE1 => (0, 0),                                // TODO: [POP HL] [1  12] [- - - -]
@@ -588,6 +588,41 @@ fn inc_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
     (1, 4)
 }
 
+fn sub_r8_n8(reg: &mut Registers, ram: &mut Ram, lhs: R8) -> (u8, u8) {
+    reg.sub8(lhs, ram.read(reg.get_PC() + 1));
+    (2, 8)
+}
+
+fn sub_r8_r8(reg: &mut Registers, lhs: R8, rhs: R8) -> (u8, u8) {
+    reg.sub8(lhs, reg.get8(rhs));
+    (1, 4)
+}
+
+fn sub_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8) {
+    reg.sub8(lhs, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn sbc_r8_n8(reg: &mut Registers, ram: &mut Ram, lhs: R8) -> (u8, u8) {
+    reg.sbc8(lhs, ram.read(reg.get_PC() + 1));
+    (2, 8)
+}
+
+fn sbc_r8_r8(reg: &mut Registers, lhs: R8, rhs: R8) -> (u8, u8) {
+    reg.sbc8(lhs, reg.get8(rhs));
+    (1, 4)
+}
+
+fn sbc_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8) {
+    reg.sbc8(lhs, ram.read(reg.get16(rhs)));
+    (1, 8)
+}
+
+fn dec_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
+    reg.dec8(lhs);
+    (1, 4)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -651,5 +686,26 @@ mod tests {
 
         add_r8_addr(&mut reg, &mut ram, R8::A, R16::HL);
         assert_eq!(0x10, reg.get8(R8::A));
+    }
+
+    #[test]
+    fn test_sub_r8_n8() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x01]);
+        reg.set8(R8::A, 0x10);
+
+        sub_r8_n8(&mut reg, &mut ram, R8::A);
+        assert_eq!(0x0F, reg.get8(R8::A));
+    }
+
+    #[test]
+    fn test_sub_r8_addr() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x01]);
+        reg.set16(R16::HL, 0x01);
+        reg.set8(R8::A, 0x10);
+
+        sub_r8_addr(&mut reg, &mut ram, R8::A, R16::HL);
+        assert_eq!(0x0F, reg.get8(R8::A));
     }
 }
