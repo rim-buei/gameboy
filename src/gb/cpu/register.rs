@@ -134,6 +134,25 @@ impl Registers {
         self.set8(reg, c)
     }
 
+    pub fn adc8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        if self.get_flag(Flag::C) {
+            self.add8(reg, 1);
+            let h = self.get_flag(Flag::H);
+            let c = self.get_flag(Flag::C);
+
+            self.add8(reg, b);
+            if h {
+                self.set_flag(Flag::H, true);
+            }
+            if c {
+                self.set_flag(Flag::C, true);
+            }
+            self
+        } else {
+            self.add8(reg, b)
+        }
+    }
+
     // inc8 internally calls self.add8(reg, 1) method
     // but it does not affect the carry flag.
     pub fn inc8(&mut self, reg: Register8) -> &mut Self {
@@ -227,46 +246,99 @@ mod tests {
 
     #[test]
     fn test_registers_add8() {
-        let mut reg = Registers::new();
-
-        reg.set8(Register8::A, 0x00).add8(Register8::A, 0x10);
-        assert_eq!(0x10, reg.A);
-        reg.set8(Register8::A, 0xFF).add8(Register8::A, 0x01);
-        assert_eq!(0x00, reg.A);
-
-        // Flags
         struct TestCase {
             a: u8,
             b: u8,
+            c: u8,
             flags: FlagZNHC,
         };
-        for case in &[
+        for test in &[
             TestCase {
                 a: 0x00,
                 b: 0x01,
+                c: 0x01,
                 flags: FlagZNHC(false, false, false, false),
             },
             TestCase {
                 a: 0x0F,
                 b: 0x01,
+                c: 0x10,
                 flags: FlagZNHC(false, false, true, false),
             },
             TestCase {
                 a: 0xF0,
                 b: 0x10,
+                c: 0x00,
                 flags: FlagZNHC(true, false, false, true),
             },
             TestCase {
                 a: 0xFF,
                 b: 0x01,
+                c: 0x00,
                 flags: FlagZNHC(true, false, true, true),
             },
         ] {
-            reg.set8(Register8::A, case.a).add8(Register8::A, case.b);
-            assert_eq!(case.flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(case.flags.1, reg.get_flag(Flag::N));
-            assert_eq!(case.flags.2, reg.get_flag(Flag::H));
-            assert_eq!(case.flags.3, reg.get_flag(Flag::C));
+            let mut reg = Registers::new();
+            reg.set8(Register8::A, test.a);
+
+            reg.add8(Register8::A, test.b);
+            assert_eq!(test.c, reg.get8(Register8::A));
+            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+        }
+    }
+
+    #[test]
+    fn test_registers_adc8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x00,
+                b: 0x01,
+                c: 0x02,
+                flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0E,
+                b: 0x01,
+                c: 0x10,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0x0F,
+                b: 0x01,
+                c: 0x11,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0xF0,
+                b: 0x0F,
+                c: 0x00,
+                flags: FlagZNHC(true, false, true, true),
+            },
+            TestCase {
+                a: 0xF0,
+                b: 0x10,
+                c: 0x01,
+                flags: FlagZNHC(false, false, false, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            reg.enable_flag(Flag::C).set8(Register8::A, test.a);
+
+            reg.adc8(Register8::A, test.b);
+            assert_eq!(test.c, reg.get8(Register8::A));
+            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
         }
     }
 
