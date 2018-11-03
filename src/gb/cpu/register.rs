@@ -141,12 +141,8 @@ impl Registers {
             let c = self.get_flag(Flag::C);
 
             self.add8(reg, b);
-            if h {
-                self.set_flag(Flag::H, true);
-            }
-            if c {
-                self.set_flag(Flag::C, true);
-            }
+            self.set_flag(Flag::H, self.get_flag(Flag::H) || h);
+            self.set_flag(Flag::C, self.get_flag(Flag::C) || c);
             self
         } else {
             self.add8(reg, b)
@@ -213,7 +209,7 @@ impl Registers {
         }
         self
     }
-    pub fn get_flag(&mut self, flag: Flag) -> bool {
+    pub fn get_flag(&self, flag: Flag) -> bool {
         match flag {
             Flag::Z => (self.F & (1 << 7)) != 0,
             Flag::N => (self.F & (1 << 6)) != 0,
