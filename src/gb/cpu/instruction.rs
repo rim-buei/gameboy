@@ -10,7 +10,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x01 => (0, 0),                                // TODO: [LD BC,d16] [3  12] [- - - -]
         0x02 => ld_addr_r8(reg, ram, R16::BC, R8::A),  // [LD (BC),A] [1  8] [- - - -]
         0x03 => (0, 0),                                // TODO: [INC BC] [1  8] [- - - -]
-        0x04 => (0, 0),                                // TODO: [INC B] [1  4] [Z 0 H -]
+        0x04 => inc_r8(reg, R8::B),                    // [INC B] [1  4] [Z 0 H -]
         0x05 => (0, 0),                                // TODO: [DEC B] [1  4] [Z 1 H -]
         0x06 => ld_r8_n8(reg, ram, R8::B),             // [LD B,d8] [2  8] [- - - -]
         0x07 => (0, 0),                                // TODO: [RLCA] [1  4] [0 0 0 C]
@@ -18,7 +18,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x09 => (0, 0),                                // TODO: [ADD HL,BC] [1  8] [- 0 H C]
         0x0A => ld_r8_addr(reg, ram, R8::A, R16::BC),  // [LD A,(BC)] [1  8] [- - - -]
         0x0B => (0, 0),                                // TODO: [DEC BC] [1  8] [- - - -]
-        0x0C => (0, 0),                                // TODO: [INC C] [1  4] [Z 0 H -]
+        0x0C => inc_r8(reg, R8::C),                    // [INC C] [1  4] [Z 0 H -]
         0x0D => (0, 0),                                // TODO: [DEC C] [1  4] [Z 1 H -]
         0x0E => ld_r8_n8(reg, ram, R8::C),             // [LD C,d8] [2  8] [- - - -]
         0x0F => (0, 0),                                // TODO: [RRCA] [1  4] [0 0 0 C]
@@ -26,7 +26,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x11 => (0, 0),                                // TODO: [LD DE,d16] [3  12] [- - - -]
         0x12 => ld_addr_r8(reg, ram, R16::DE, R8::A),  // [LD (DE),A] [1  8] [- - - -]
         0x13 => (0, 0),                                // TODO: [INC DE] [1  8] [- - - -]
-        0x14 => (0, 0),                                // TODO: [INC D] [1  4] [Z 0 H -]
+        0x14 => inc_r8(reg, R8::D),                    // [INC D] [1  4] [Z 0 H -]
         0x15 => (0, 0),                                // TODO: [DEC D] [1  4] [Z 1 H -]
         0x16 => ld_r8_n8(reg, ram, R8::D),             // [LD D,d8] [2  8] [- - - -]
         0x17 => (0, 0),                                // TODO: [RLA] [1  4] [0 0 0 C]
@@ -34,7 +34,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x19 => (0, 0),                                // TODO: [ADD HL,DE] [1  8] [- 0 H C]
         0x1A => ld_r8_addr(reg, ram, R8::A, R16::DE),  // [LD A,(DE)] [1  8] [- - - -]
         0x1B => (0, 0),                                // TODO: [DEC DE] [1  8] [- - - -]
-        0x1C => (0, 0),                                // TODO: [INC E] [1  4] [Z 0 H -]
+        0x1C => inc_r8(reg, R8::E),                    // [INC E] [1  4] [Z 0 H -]
         0x1D => (0, 0),                                // TODO: [DEC E] [1  4] [Z 1 H -]
         0x1E => ld_r8_n8(reg, ram, R8::E),             // [LD E,d8] [2  8] [- - - -]
         0x1F => (0, 0),                                // TODO: [RRA] [1  4] [0 0 0 C]
@@ -42,7 +42,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x21 => (0, 0),                                // TODO: [LD HL,d16] [3  12] [- - - -]
         0x22 => (0, 0),                                // TODO: [LD (HL+),A] [1  8] [- - - -]
         0x23 => (0, 0),                                // TODO: [INC HL] [1  8] [- - - -]
-        0x24 => (0, 0),                                // TODO: [INC H] [1  4] [Z 0 H -]
+        0x24 => inc_r8(reg, R8::H),                    // [INC H] [1  4] [Z 0 H -]
         0x25 => (0, 0),                                // TODO: [DEC H] [1  4] [Z 1 H -]
         0x26 => ld_r8_n8(reg, ram, R8::H),             // [LD H,d8] [2  8] [- - - -]
         0x27 => (0, 0),                                // TODO: [DAA] [1  4] [Z - 0 C]
@@ -50,7 +50,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x29 => (0, 0),                                // TODO: [ADD HL,HL] [1  8] [- 0 H C]
         0x2A => (0, 0),                                // TODO: [LD A,(HL+)] [1  8] [- - - -]
         0x2B => (0, 0),                                // TODO: [DEC HL] [1  8] [- - - -]
-        0x2C => (0, 0),                                // TODO: [INC L] [1  4] [Z 0 H -]
+        0x2C => inc_r8(reg, R8::L),                    // [INC L] [1  4] [Z 0 H -]
         0x2D => (0, 0),                                // TODO: [DEC L] [1  4] [Z 1 H -]
         0x2E => ld_r8_n8(reg, ram, R8::L),             // [LD L,d8] [2  8] [- - - -]
         0x2F => (0, 0),                                // TODO: [CPL] [1  4] [- 1 1 -]
@@ -66,7 +66,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x39 => (0, 0),                                // TODO: [ADD HL,SP] [1  8] [- 0 H C]
         0x3A => (0, 0),                                // TODO: [LD A,(HL-)] [1  8] [- - - -]
         0x3B => (0, 0),                                // TODO: [DEC SP] [1  8] [- - - -]
-        0x3C => (0, 0),                                // TODO: [INC A] [1  4] [Z 0 H -]
+        0x3C => inc_r8(reg, R8::A),                    // [INC A] [1  4] [Z 0 H -]
         0x3D => (0, 0),                                // TODO: [DEC A] [1  4] [Z 1 H -]
         0x3E => ld_r8_n8(reg, ram, R8::A),             // [LD A,d8] [2  8] [- - - -]
         0x3F => (0, 0),                                // TODO: [CCF] [1  4] [- 0 0 C]
@@ -581,6 +581,11 @@ fn adc_r8_r8(reg: &mut Registers, lhs: R8, rhs: R8) -> (u8, u8) {
 fn adc_r8_addr(reg: &mut Registers, ram: &mut Ram, lhs: R8, rhs: R16) -> (u8, u8) {
     reg.adc8(lhs, ram.read(reg.get16(rhs)));
     (1, 8)
+}
+
+fn inc_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
+    reg.inc8(lhs);
+    (1, 4)
 }
 
 #[cfg(test)]
