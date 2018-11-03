@@ -157,14 +157,16 @@ impl Registers {
         self.set_flag(Flag::C, temp)
     }
 
-    pub fn sub8(&mut self, reg: Register8, n: u8) -> &mut Self {
-        let mut v = self.get8(reg) as i32 - n as i32;
-        if v < 0 {
-            // TODO: Underflow
-            v += 0x100
-        }
+    pub fn sub8(&mut self, reg: Register8, b: u8) -> &mut Self {
+        let a = self.get8(reg);
+        let c = a.wrapping_sub(b);
 
-        self.set8(reg, (v & 0xFF) as u8)
+        self.set_flag(Flag::Z, c == 0x00);
+        self.enable_flag(Flag::N);
+        self.set_flag(Flag::H, (a & 0x0F) < (b & 0x0F));
+        self.set_flag(Flag::C, a < b);
+
+        self.set8(reg, c)
     }
 
     pub fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
@@ -359,13 +361,48 @@ mod tests {
     }
 
     #[test]
-    fn test_registers_sub() {
-        let mut reg = Registers::new();
+    fn test_registers_sub8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x02,
+                b: 0x01,
+                c: 0x01,
+                flags: FlagZNHC(false, true, false, false),
+            },
+            TestCase {
+                a: 0x10,
+                b: 0x01,
+                c: 0x0F,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x01,
+                b: 0x02,
+                c: 0xFF,
+                flags: FlagZNHC(false, true, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            reg.set8(Register8::A, test.a);
 
-        reg.set8(Register8::A, 0x20).sub8(Register8::A, 0x10);
-        assert_eq!(0x10, reg.A);
-        reg.set8(Register8::A, 0x00).sub8(Register8::A, 0x01);
-        assert_eq!(0xFF, reg.A);
+            reg.sub8(Register8::A, test.b);
+            assert_eq!(test.c, reg.get8(Register8::A));
+            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
+            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
+            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
+            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+        }
+    }
+
+    #[test]
+    fn test_registers_sub16() {
+        let mut reg = Registers::new();
 
         reg.set16(Register16::PC, 0x2000)
             .sub16(Register16::PC, 0x1000);
