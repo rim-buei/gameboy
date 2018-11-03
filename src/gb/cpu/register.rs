@@ -1,4 +1,5 @@
 #[allow(non_snake_case)]
+#[derive(Debug, Copy, Clone)]
 pub struct Registers {
     A: u8,
     F: u8,
@@ -301,7 +302,25 @@ impl Registers {
 mod tests {
     use super::*;
 
+    #[derive(Debug)]
     struct FlagZNHC(bool, bool, bool, bool);
+
+    impl FlagZNHC {
+        fn new(reg: Registers) -> Self {
+            FlagZNHC(
+                reg.get_flag(Flag::Z),
+                reg.get_flag(Flag::N),
+                reg.get_flag(Flag::H),
+                reg.get_flag(Flag::C),
+            )
+        }
+    }
+
+    impl PartialEq for FlagZNHC {
+        fn eq(&self, other: &FlagZNHC) -> bool {
+            self.0 == other.0 && self.1 == other.1 && self.2 == other.2 && self.3 == other.3
+        }
+    }
 
     #[test]
     fn test_registers_add8() {
@@ -342,10 +361,7 @@ mod tests {
 
             reg.add8(Register8::A, test.b);
             assert_eq!(test.c, reg.get8(Register8::A));
-            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
 
@@ -394,10 +410,7 @@ mod tests {
 
             reg.adc8(Register8::A, test.b);
             assert_eq!(test.c, reg.get8(Register8::A));
-            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
 
@@ -461,10 +474,7 @@ mod tests {
 
             reg.sub8(Register8::A, test.b);
             assert_eq!(test.c, reg.get8(Register8::A));
-            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
 
@@ -514,10 +524,7 @@ mod tests {
 
             reg.sbc8(Register8::A, test.b);
             assert_eq!(test.c, reg.get8(Register8::A));
-            assert_eq!(test.flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
 
@@ -591,26 +598,17 @@ mod tests {
             reg.set8(Register8::A, test.a);
             reg.and8(Register8::A, test.b);
             assert_eq!(test.and, reg.get8(Register8::A));
-            assert_eq!(test.and_flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.and_flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.and_flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.and_flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.and_flags, FlagZNHC::new(reg));
 
             reg.set8(Register8::A, test.a);
             reg.or8(Register8::A, test.b);
             assert_eq!(test.or, reg.get8(Register8::A));
-            assert_eq!(test.or_flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.or_flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.or_flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.or_flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.or_flags, FlagZNHC::new(reg));
 
             reg.set8(Register8::A, test.a);
             reg.xor8(Register8::A, test.b);
             assert_eq!(test.xor, reg.get8(Register8::A));
-            assert_eq!(test.xor_flags.0, reg.get_flag(Flag::Z));
-            assert_eq!(test.xor_flags.1, reg.get_flag(Flag::N));
-            assert_eq!(test.xor_flags.2, reg.get_flag(Flag::H));
-            assert_eq!(test.xor_flags.3, reg.get_flag(Flag::C));
+            assert_eq!(test.xor_flags, FlagZNHC::new(reg));
         }
     }
 
