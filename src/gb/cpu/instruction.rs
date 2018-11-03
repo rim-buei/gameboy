@@ -631,4 +631,25 @@ mod tests {
         ld_addr_r8(&mut reg, &mut ram, R16::HL, R8::B);
         assert_eq!(0xBB, ram.read(0x01));
     }
+
+    #[test]
+    fn test_add_r8_n8() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x01]);
+        reg.set8(R8::A, 0x0F);
+
+        add_r8_n8(&mut reg, &mut ram, R8::A);
+        assert_eq!(0x10, reg.get8(R8::A));
+    }
+
+    #[test]
+    fn test_add_r8_addr() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x01]);
+        reg.set16(R16::HL, 0x01);
+        reg.set8(R8::A, 0x0F);
+
+        add_r8_addr(&mut reg, &mut ram, R8::A, R16::HL);
+        assert_eq!(0x10, reg.get8(R8::A));
+    }
 }
