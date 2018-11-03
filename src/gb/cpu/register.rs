@@ -157,6 +157,19 @@ impl Registers {
         self.set_flag(Flag::C, temp)
     }
 
+    pub fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
+        let v = self.get16(reg) as u32 + n as u32;
+        if v > 0xFFFF {
+            // TODO: Overflow
+        }
+
+        self.set16(reg, (v & 0xFFFF) as u16)
+    }
+
+    pub fn inc16(&mut self, reg: Register16) -> &mut Self {
+        self.add16(reg, 1)
+    }
+
     pub fn sub8(&mut self, reg: Register8, b: u8) -> &mut Self {
         let a = self.get8(reg);
         let c = a.wrapping_sub(b);
@@ -169,17 +182,12 @@ impl Registers {
         self.set8(reg, c)
     }
 
-    pub fn add16(&mut self, reg: Register16, n: u16) -> &mut Self {
-        let v = self.get16(reg) as u32 + n as u32;
-        if v > 0xFFFF {
-            // TODO: Overflow
-        }
-
-        self.set16(reg, (v & 0xFFFF) as u16)
-    }
-
-    pub fn inc16(&mut self, reg: Register16) -> &mut Self {
-        self.add16(reg, 1)
+    // dec8 internally calls self.dec8(reg, 1) method
+    // but it does not affect the carry flag.
+    pub fn dec8(&mut self, reg: Register8) -> &mut Self {
+        let temp = self.get_flag(Flag::C);
+        self.sub8(reg, 1);
+        self.set_flag(Flag::C, temp)
     }
 
     pub fn sub16(&mut self, reg: Register16, n: u16) -> &mut Self {
@@ -345,6 +353,7 @@ mod tests {
         let mut reg = Registers::new();
 
         reg.set8(Register8::A, 0xFF).inc8(Register8::A);
+        assert_eq!(0x00, reg.get8(Register8::A));
         assert_eq!(false, reg.get_flag(Flag::C));
     }
 
@@ -398,6 +407,15 @@ mod tests {
             assert_eq!(test.flags.2, reg.get_flag(Flag::H));
             assert_eq!(test.flags.3, reg.get_flag(Flag::C));
         }
+    }
+
+    #[test]
+    fn test_registers_dec8() {
+        let mut reg = Registers::new();
+
+        reg.set8(Register8::A, 0x00).dec8(Register8::A);
+        assert_eq!(0xFF, reg.get8(Register8::A));
+        assert_eq!(false, reg.get_flag(Flag::C));
     }
 
     #[test]
