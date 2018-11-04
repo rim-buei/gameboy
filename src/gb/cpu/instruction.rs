@@ -3,7 +3,7 @@ use super::super::ram::Ram;
 use super::io::{Reader16, Reader8, Writer16, Writer8};
 use super::register::Register16 as R16;
 use super::register::Register8 as R8;
-use super::register::{Address, Immediate8, Registers};
+use super::register::{Address, Flag, Immediate8, Registers};
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
     let mut i = Instruction(reg, ram);
@@ -546,6 +546,68 @@ impl<'a> Instruction<'a> {
         self
     }
 
+    fn add8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let a = self.0.A as u16;
+        let b = rhs.read8(self.0, self.1) as u16;
+        let c = a + b;
+        let hc = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
+
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.disable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::C, c > 0xFF);
+
+        self.0.A = c as u8;
+        self
+    }
+
+    fn adc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let a = self.0.A as u16;
+        let b = rhs.read8(self.0, self.1) as u16;
+        let carry = if self.0.get_flag(Flag::C) { 1 } else { 0 } as u16;
+        let c = a + b + carry;
+        let hc = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
+
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.disable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::C, c > 0xFF);
+
+        self.0.A = c as u8;
+        self
+    }
+
+    fn sub8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let a = self.0.A as i16;
+        let b = rhs.read8(self.0, self.1) as i16;
+        let c = a - b;
+        let hc = ((a & 0x0F) - (b & 0x0F)) < 0;
+
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.enable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::C, c < 0);
+
+        self.0.A = c as u8;
+        self
+    }
+
+    fn sbc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let a = self.0.A as i16;
+        let b = rhs.read8(self.0, self.1) as i16;
+        let carry = if self.0.get_flag(Flag::C) { 1 } else { 0 } as i16;
+        let c = a - b - carry;
+        let hc = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
+
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.enable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::C, c < 0);
+
+        self.0.A = c as u8;
+        self
+    }
+
     fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
@@ -671,6 +733,20 @@ fn xor_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
 mod tests {
     use super::*;
 
+    #[derive(Debug, PartialEq)]
+    struct FlagZNHC(bool, bool, bool, bool);
+
+    impl FlagZNHC {
+        fn new(reg: Registers) -> Self {
+            FlagZNHC(
+                reg.get_flag(Flag::Z),
+                reg.get_flag(Flag::N),
+                reg.get_flag(Flag::H),
+                reg.get_flag(Flag::C),
+            )
+        }
+    }
+
     #[test]
     fn test_ld8_r8_r8() {
         let mut reg = Registers::new();
@@ -701,6 +777,204 @@ mod tests {
         let mut i = Instruction(&mut reg, &mut ram);
         i.ld8(R8::B, Immediate8);
         assert_eq!(0xAA, reg.B);
+    }
+
+    #[test]
+    fn test_add8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x00,
+                b: 0x01,
+                c: 0x01,
+                flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0F,
+                b: 0x01,
+                c: 0x10,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0xF0,
+                b: 0x10,
+                c: 0x00,
+                flags: FlagZNHC(true, false, false, true),
+            },
+            TestCase {
+                a: 0xFF,
+                b: 0x01,
+                c: 0x00,
+                flags: FlagZNHC(true, false, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            reg.A = test.a;
+            reg.B = test.b;
+
+            let mut i = Instruction(&mut reg, &mut ram);
+            i.add8(R8::B);
+            assert_eq!(test.c, reg.A);
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_adc8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x00,
+                b: 0x01,
+                c: 0x02,
+                flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0E,
+                b: 0x01,
+                c: 0x10,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x0F,
+                c: 0x10,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0xF0,
+                b: 0x10,
+                c: 0x01,
+                flags: FlagZNHC(false, false, false, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0xFF,
+                c: 0x00,
+                flags: FlagZNHC(true, false, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            reg.enable_flag(Flag::C);
+            reg.A = test.a;
+            reg.B = test.b;
+
+            let mut i = Instruction(&mut reg, &mut ram);
+            i.adc8(R8::B);
+            assert_eq!(test.c, reg.A);
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_sub8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x02,
+                b: 0x01,
+                c: 0x01,
+                flags: FlagZNHC(false, true, false, false),
+            },
+            TestCase {
+                a: 0x10,
+                b: 0x01,
+                c: 0x0F,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x10,
+                c: 0xF0,
+                flags: FlagZNHC(false, true, false, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x01,
+                c: 0xFF,
+                flags: FlagZNHC(false, true, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            reg.A = test.a;
+            reg.B = test.b;
+
+            let mut i = Instruction(&mut reg, &mut ram);
+            i.sub8(R8::B);
+            assert_eq!(test.c, reg.A);
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_sbc8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            c: u8,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x03,
+                b: 0x01,
+                c: 0x01,
+                flags: FlagZNHC(false, true, false, false),
+            },
+            TestCase {
+                a: 0x11,
+                b: 0x01,
+                c: 0x0F,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x10,
+                b: 0x01,
+                c: 0x0E,
+                flags: FlagZNHC(false, true, true, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x0F,
+                c: 0xF0,
+                flags: FlagZNHC(false, true, true, true),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0xFF,
+                c: 0x00,
+                flags: FlagZNHC(true, true, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            reg.enable_flag(Flag::C);
+            reg.A = test.a;
+            reg.B = test.b;
+
+            let mut i = Instruction(&mut reg, &mut ram);
+            i.sbc8(R8::B);
+            assert_eq!(test.c, reg.A);
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
     }
 
     #[test]
