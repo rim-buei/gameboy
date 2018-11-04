@@ -137,38 +137,38 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x7D => i.ld8(R8::A, R8::L).r(1, 4),       // [LD A,L] [1  4] [- - - -]
         0x7E => i.ld8(R8::A, Address::HL).r(1, 8), // [LD A,(HL)] [1  8] [- - - -]
         0x7F => i.ld8(R8::A, R8::A).r(1, 4),       // [LD A,A] [1  4] [- - - -]
-        0x80 => add_r8(reg, R8::B),                // [ADD A,B] [1  4] [Z 0 H C]
-        0x81 => add_r8(reg, R8::C),                // [ADD A,C] [1  4] [Z 0 H C]
-        0x82 => add_r8(reg, R8::D),                // [ADD A,D] [1  4] [Z 0 H C]
-        0x83 => add_r8(reg, R8::E),                // [ADD A,E] [1  4] [Z 0 H C]
-        0x84 => add_r8(reg, R8::H),                // [ADD A,H] [1  4] [Z 0 H C]
-        0x85 => add_r8(reg, R8::L),                // [ADD A,L] [1  4] [Z 0 H C]
-        0x86 => add_addr(reg, ram, R16::HL),       // [ADD A,(HL)] [1  8] [Z 0 H C]
-        0x87 => add_r8(reg, R8::A),                // [ADD A,A] [1  4] [Z 0 H C]
-        0x88 => adc_r8(reg, R8::B),                // [ADC A,B] [1  4] [Z 0 H C]
-        0x89 => adc_r8(reg, R8::C),                // [ADC A,C] [1  4] [Z 0 H C]
-        0x8A => adc_r8(reg, R8::D),                // [ADC A,D] [1  4] [Z 0 H C]
-        0x8B => adc_r8(reg, R8::E),                // [ADC A,E] [1  4] [Z 0 H C]
-        0x8C => adc_r8(reg, R8::H),                // [ADC A,H] [1  4] [Z 0 H C]
-        0x8D => adc_r8(reg, R8::L),                // [ADC A,L] [1  4] [Z 0 H C]
-        0x8E => adc_addr(reg, ram, R16::HL),       // [ADC A,(HL)] [1  8] [Z 0 H C]
-        0x8F => adc_r8(reg, R8::A),                // [ADC A,A] [1  4] [Z 0 H C]
-        0x90 => sub_r8(reg, R8::B),                // [SUB A,B] [1  4] [Z 1 H C]
-        0x91 => sub_r8(reg, R8::C),                // [SUB A,C] [1  4] [Z 1 H C]
-        0x92 => sub_r8(reg, R8::D),                // [SUB A,D] [1  4] [Z 1 H C]
-        0x93 => sub_r8(reg, R8::E),                // [SUB A,E] [1  4] [Z 1 H C]
-        0x94 => sub_r8(reg, R8::H),                // [SUB A,H] [1  4] [Z 1 H C]
-        0x95 => sub_r8(reg, R8::L),                // [SUB A,L] [1  4] [Z 1 H C]
-        0x96 => sub_addr(reg, ram, R16::HL),       // [SUB A,(HL)] [1  8] [Z 1 H C]
-        0x97 => sub_r8(reg, R8::A),                // [SUB A,A] [1  4] [Z 1 H C]
-        0x98 => sbc_r8(reg, R8::B),                // [SBC A,B] [1  4] [Z 1 H C]
-        0x99 => sbc_r8(reg, R8::C),                // [SBC A,C] [1  4] [Z 1 H C]
-        0x9A => sbc_r8(reg, R8::D),                // [SBC A,D] [1  4] [Z 1 H C]
-        0x9B => sbc_r8(reg, R8::E),                // [SBC A,E] [1  4] [Z 1 H C]
-        0x9C => sbc_r8(reg, R8::H),                // [SBC A,H] [1  4] [Z 1 H C]
-        0x9D => sbc_r8(reg, R8::L),                // [SBC A,L] [1  4] [Z 1 H C]
-        0x9E => sbc_addr(reg, ram, R16::HL),       // [SBC A,(HL)] [1  8] [Z 1 H C]
-        0x9F => sbc_r8(reg, R8::A),                // [SBC A,A] [1  4] [Z 1 H C]
+        0x80 => i.add8(R8::B).r(1, 4),             // [ADD A,B] [1  4] [Z 0 H C]
+        0x81 => i.add8(R8::C).r(1, 4),             // [ADD A,C] [1  4] [Z 0 H C]
+        0x82 => i.add8(R8::D).r(1, 4),             // [ADD A,D] [1  4] [Z 0 H C]
+        0x83 => i.add8(R8::E).r(1, 4),             // [ADD A,E] [1  4] [Z 0 H C]
+        0x84 => i.add8(R8::H).r(1, 4),             // [ADD A,H] [1  4] [Z 0 H C]
+        0x85 => i.add8(R8::L).r(1, 4),             // [ADD A,L] [1  4] [Z 0 H C]
+        0x86 => i.add8(Address::HL).r(1, 8),       // [ADD A,(HL)] [1  8] [Z 0 H C]
+        0x87 => i.add8(R8::A).r(1, 4),             // [ADD A,A] [1  4] [Z 0 H C]
+        0x88 => i.adc8(R8::B).r(1, 4),             // [ADC A,B] [1  4] [Z 0 H C]
+        0x89 => i.adc8(R8::C).r(1, 4),             // [ADC A,C] [1  4] [Z 0 H C]
+        0x8A => i.adc8(R8::D).r(1, 4),             // [ADC A,D] [1  4] [Z 0 H C]
+        0x8B => i.adc8(R8::E).r(1, 4),             // [ADC A,E] [1  4] [Z 0 H C]
+        0x8C => i.adc8(R8::H).r(1, 4),             // [ADC A,H] [1  4] [Z 0 H C]
+        0x8D => i.adc8(R8::L).r(1, 4),             // [ADC A,L] [1  4] [Z 0 H C]
+        0x8E => i.adc8(Address::HL).r(1, 8),       // [ADC A,(HL)] [1  8] [Z 0 H C]
+        0x8F => i.adc8(R8::A).r(1, 4),             // [ADC A,A] [1  4] [Z 0 H C]
+        0x90 => i.sub8(R8::B).r(1, 4),             // [SUB A,B] [1  4] [Z 1 H C]
+        0x91 => i.sub8(R8::C).r(1, 4),             // [SUB A,C] [1  4] [Z 1 H C]
+        0x92 => i.sub8(R8::D).r(1, 4),             // [SUB A,D] [1  4] [Z 1 H C]
+        0x93 => i.sub8(R8::E).r(1, 4),             // [SUB A,E] [1  4] [Z 1 H C]
+        0x94 => i.sub8(R8::H).r(1, 4),             // [SUB A,H] [1  4] [Z 1 H C]
+        0x95 => i.sub8(R8::L).r(1, 4),             // [SUB A,L] [1  4] [Z 1 H C]
+        0x96 => i.sub8(Address::HL).r(1, 8),       // [SUB A,(HL)] [1  8] [Z 1 H C]
+        0x97 => i.sub8(R8::A).r(1, 4),             // [SUB A,A] [1  4] [Z 1 H C]
+        0x98 => i.sbc8(R8::B).r(1, 4),             // [SBC A,B] [1  4] [Z 1 H C]
+        0x99 => i.sbc8(R8::C).r(1, 4),             // [SBC A,C] [1  4] [Z 1 H C]
+        0x9A => i.sbc8(R8::D).r(1, 4),             // [SBC A,D] [1  4] [Z 1 H C]
+        0x9B => i.sbc8(R8::E).r(1, 4),             // [SBC A,E] [1  4] [Z 1 H C]
+        0x9C => i.sbc8(R8::H).r(1, 4),             // [SBC A,H] [1  4] [Z 1 H C]
+        0x9D => i.sbc8(R8::L).r(1, 4),             // [SBC A,L] [1  4] [Z 1 H C]
+        0x9E => i.sbc8(Address::HL).r(1, 8),       // [SBC A,(HL)] [1  8] [Z 1 H C]
+        0x9F => i.sbc8(R8::A).r(1, 4),             // [SBC A,A] [1  4] [Z 1 H C]
         0xA0 => and_r8(reg, R8::B),                // [AND B] [1  4] [Z 0 1 0]
         0xA1 => and_r8(reg, R8::C),                // [AND C] [1  4] [Z 0 1 0]
         0xA2 => and_r8(reg, R8::D),                // [AND D] [1  4] [Z 0 1 0]
@@ -207,7 +207,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xC3 => (0, 0),                            // TODO: [JP a16] [3  16] [- - - -]
         0xC4 => (0, 0),                            // TODO: [CALL NZ,a16] [3  24/12] [- - - -]
         0xC5 => (0, 0),                            // TODO: [PUSH BC] [1  16] [- - - -]
-        0xC6 => add_n8(reg, ram),                  // [ADD A,d8] [2  8] [Z 0 H C]
+        0xC6 => i.add8(Immediate8).r(2, 8),        // [ADD A,d8] [2  8] [Z 0 H C]
         0xC7 => (0, 0),                            // TODO: [RST 00H] [1  16] [- - - -]
         0xC8 => (0, 0),                            // TODO: [RET Z] [1  20/8] [- - - -]
         0xC9 => (0, 0),                            // TODO: [RET] [1  16] [- - - -]
@@ -215,7 +215,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xCB => i.undefined(opcode).r(1, 0),       // [PREFIX CB] [1  4] [- - - -]
         0xCC => (0, 0),                            // TODO: [CALL Z,a16] [3  24/12] [- - - -]
         0xCD => (0, 0),                            // TODO: [CALL a16] [3  24] [- - - -]
-        0xCE => adc_n8(reg, ram),                  // [ADC A,d8] [2  8] [Z 0 H C]
+        0xCE => i.adc8(Immediate8).r(2, 8),        // [ADC A,d8] [2  8] [Z 0 H C]
         0xCF => (0, 0),                            // TODO: [RST 08H] [1  16] [- - - -]
         0xD0 => (0, 0),                            // TODO: [RET NC] [1  20/8] [- - - -]
         0xD1 => (0, 0),                            // TODO: [POP DE] [1  12] [- - - -]
@@ -223,7 +223,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD3 => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xD4 => (0, 0),                            // TODO: [CALL NC,a16] [3  24/12] [- - - -]
         0xD5 => (0, 0),                            // TODO: [PUSH DE] [1  16] [- - - -]
-        0xD6 => sub_n8(reg, ram),                  // [SUB A,d8] [2  8] [Z 1 H C]
+        0xD6 => i.sub8(Immediate8).r(2, 8),        // [SUB A,d8] [2  8] [Z 1 H C]
         0xD7 => (0, 0),                            // TODO: [RST 10H] [1  16] [- - - -]
         0xD8 => (0, 0),                            // TODO: [RET C] [1  20/8] [- - - -]
         0xD9 => (0, 0),                            // TODO: [RETI] [1  16] [- - - -]
@@ -231,7 +231,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xDB => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xDC => (0, 0),                            // TODO: [CALL C,a16] [3  24/12] [- - - -]
         0xDD => i.undefined(opcode).r(1, 0),       // [Undefined]
-        0xDE => sbc_n8(reg, ram),                  // [SBC A,d8] [2  8] [Z 1 H C]
+        0xDE => i.sbc8(Immediate8).r(2, 8),        // [SBC A,d8] [2  8] [Z 1 H C]
         0xDF => (0, 0),                            // TODO: [RST 18H] [1  16] [- - - -]
         0xE0 => (0, 0),                            // TODO: [LDH (a8),A] [2  12] [- - - -]
         0xE1 => (0, 0),                            // TODO: [POP HL] [1  12] [- - - -]
@@ -614,69 +614,9 @@ impl<'a> Instruction<'a> {
     }
 }
 
-fn add_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.add8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn add_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.add8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn add_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.add8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
-}
-
-fn adc_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.adc8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn adc_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.adc8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn adc_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.adc8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
-}
-
 fn inc_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
     reg.inc8(lhs);
     (1, 4)
-}
-
-fn sub_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.sub8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn sub_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.sub8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn sub_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.sub8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
-}
-
-fn sbc_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.sbc8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn sbc_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.sbc8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn sbc_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.sbc8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
 }
 
 fn dec_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
@@ -975,47 +915,5 @@ mod tests {
             assert_eq!(test.c, reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
-    }
-
-    #[test]
-    fn test_add_addr() {
-        let mut reg = Registers::new();
-        let mut ram = Ram::new(vec![0x00, 0x01]);
-        reg.set16(R16::HL, 0x01);
-        reg.set8(R8::A, 0x0F);
-
-        add_addr(&mut reg, &mut ram, R16::HL);
-        assert_eq!(0x10, reg.get8(R8::A));
-    }
-
-    #[test]
-    fn test_add_n8() {
-        let mut reg = Registers::new();
-        let mut ram = Ram::new(vec![0x00, 0x01]);
-        reg.set8(R8::A, 0x0F);
-
-        add_n8(&mut reg, &mut ram);
-        assert_eq!(0x10, reg.get8(R8::A));
-    }
-
-    #[test]
-    fn test_sub_addr() {
-        let mut reg = Registers::new();
-        let mut ram = Ram::new(vec![0x00, 0x01]);
-        reg.set16(R16::HL, 0x01);
-        reg.set8(R8::A, 0x10);
-
-        sub_addr(&mut reg, &mut ram, R16::HL);
-        assert_eq!(0x0F, reg.get8(R8::A));
-    }
-
-    #[test]
-    fn test_sub_n8() {
-        let mut reg = Registers::new();
-        let mut ram = Ram::new(vec![0x00, 0x01]);
-        reg.set8(R8::A, 0x10);
-
-        sub_n8(&mut reg, &mut ram);
-        assert_eq!(0x0F, reg.get8(R8::A));
     }
 }
