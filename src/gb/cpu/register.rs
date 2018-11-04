@@ -5,17 +5,17 @@ use super::io::{Reader16, Reader8, Writer16, Writer8};
 #[allow(non_snake_case)]
 #[derive(Debug, Copy, Clone)]
 pub struct Registers {
-    A: u8,
-    F: u8,
-    B: u8,
-    C: u8,
-    D: u8,
-    E: u8,
-    H: u8,
-    L: u8,
+    pub A: u8,
+    pub F: u8,
+    pub B: u8,
+    pub C: u8,
+    pub D: u8,
+    pub E: u8,
+    pub H: u8,
+    pub L: u8,
 
-    SP: u16,
-    PC: u16,
+    pub SP: u16,
+    pub PC: u16,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -32,8 +32,11 @@ pub enum Register8 {
 
 impl Reader8 for Register8 {
     fn read8(&self, reg: &mut Registers, _: &mut Ram) -> u8 {
+        use self::Register8::*;
+
         match *self {
             A => reg.A,
+            F => reg.F,
             B => reg.B,
             C => reg.C,
             D => reg.D,
@@ -46,8 +49,11 @@ impl Reader8 for Register8 {
 
 impl Writer8 for Register8 {
     fn write8(&self, reg: &mut Registers, _: &mut Ram, v: u8) {
+        use self::Register8::*;
+
         match *self {
             A => reg.A = v,
+            F => reg.F = v,
             B => reg.B = v,
             C => reg.C = v,
             D => reg.D = v,
@@ -70,6 +76,8 @@ pub enum Register16 {
 
 impl Reader16 for Register16 {
     fn read16(&self, reg: &mut Registers, _: &mut Ram) -> u16 {
+        use self::Register16::*;
+
         match *self {
             Register16::AF => ((reg.A as u16) << 8) + (reg.F as u16),
             Register16::BC => ((reg.B as u16) << 8) + (reg.C as u16),
@@ -83,6 +91,8 @@ impl Reader16 for Register16 {
 
 impl Writer16 for Register16 {
     fn write16(&self, reg: &mut Registers, _: &mut Ram, v: u16) {
+        use self::Register16::*;
+
         match *self {
             Register16::AF => {
                 reg.A = (v >> 8) as u8;
@@ -376,6 +386,8 @@ pub enum Address {
 
 impl Reader8 for Address {
     fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
+        use self::Address::*;
+
         let src = match *self {
             BC => Register16::BC,
             DE => Register16::DE,
@@ -389,6 +401,8 @@ impl Reader8 for Address {
 
 impl Writer8 for Address {
     fn write8(&self, reg: &mut Registers, ram: &mut Ram, v: u8) {
+        use self::Address::*;
+
         let dst = match *self {
             BC => Register16::BC,
             DE => Register16::DE,
