@@ -227,6 +227,16 @@ impl Reader8 for Immediate8 {
     }
 }
 
+// TODO: Should be moved to other module
+#[derive(Debug, Copy, Clone)]
+pub struct Immediate16;
+
+impl Reader16 for Immediate16 {
+    fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
+        ((ram.read(reg.PC + 2) as u16) << 8) | ram.read(reg.PC + 1) as u16
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
