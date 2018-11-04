@@ -407,6 +407,19 @@ mod tests {
     }
 
     #[test]
+    fn test_processor_inc_dec_hl() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x0F]);
+        reg.L = 0x01;
+
+        let mut p = Processor(&mut reg, &mut ram);
+        p.inc8(Address::HL);
+        assert_eq!(0x10, p.1.read(1));
+        p.dec8(Address::HL);
+        assert_eq!(0x0F, p.1.read(1));
+    }
+
+    #[test]
     fn test_processor_logical8() {
         struct TestCase {
             a: u8,
