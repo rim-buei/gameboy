@@ -16,6 +16,12 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn ld16<R: Reader16, W: Writer16>(&mut self, lhs: W, rhs: R) -> &mut Self {
+        let v = rhs.read16(self.0, self.1);
+        lhs.write16(self.0, self.1, v);
+        self
+    }
+
     pub fn add8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.0.A as u16;
         let b = rhs.read8(self.0, self.1) as u16;
@@ -156,9 +162,9 @@ impl<'a> Processor<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::register::Immediate8;
     use super::super::register::Register16 as R16;
     use super::super::register::Register8 as R8;
+    use super::super::register::{Immediate16, Immediate8};
 
     use super::*;
 
@@ -206,6 +212,16 @@ mod tests {
         let mut p = Processor(&mut reg, &mut ram);
         p.ld8(R8::B, Immediate8);
         assert_eq!(0xAA, reg.B);
+    }
+
+    #[test]
+    fn test_processor_ld16() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xAB, 0xCD]);
+
+        let mut p = Processor(&mut reg, &mut ram);
+        p.ld16(R16::SP, Immediate16);
+        assert_eq!(0xCDAB, reg.SP);
     }
 
     #[test]
