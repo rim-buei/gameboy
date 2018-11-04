@@ -1,3 +1,7 @@
+use super::super::ram::Ram;
+
+use super::io::{Reader16, Reader8, Writer16, Writer8};
+
 #[allow(non_snake_case)]
 #[derive(Debug, Copy, Clone)]
 pub struct Registers {
@@ -26,6 +30,34 @@ pub enum Register8 {
     L,
 }
 
+impl Reader8 for Register8 {
+    fn read8(&self, reg: &mut Registers, _: &mut Ram) -> u8 {
+        match *self {
+            A => reg.A,
+            B => reg.B,
+            C => reg.C,
+            D => reg.D,
+            E => reg.E,
+            H => reg.H,
+            L => reg.L,
+        }
+    }
+}
+
+impl Writer8 for Register8 {
+    fn write8(&self, reg: &mut Registers, _: &mut Ram, v: u8) {
+        match *self {
+            A => reg.A = v,
+            B => reg.B = v,
+            C => reg.C = v,
+            D => reg.D = v,
+            E => reg.E = v,
+            H => reg.H = v,
+            L => reg.L = v,
+        }
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub enum Register16 {
     AF,
@@ -34,6 +66,44 @@ pub enum Register16 {
     HL,
     PC,
     SP,
+}
+
+impl Reader16 for Register16 {
+    fn read16(&self, reg: &mut Registers, _: &mut Ram) -> u16 {
+        match *self {
+            Register16::AF => ((reg.A as u16) << 8) + (reg.F as u16),
+            Register16::BC => ((reg.B as u16) << 8) + (reg.C as u16),
+            Register16::DE => ((reg.D as u16) << 8) + (reg.E as u16),
+            Register16::HL => ((reg.H as u16) << 8) + (reg.L as u16),
+            Register16::SP => reg.SP,
+            Register16::PC => reg.PC,
+        }
+    }
+}
+
+impl Writer16 for Register16 {
+    fn write16(&self, reg: &mut Registers, _: &mut Ram, v: u16) {
+        match *self {
+            Register16::AF => {
+                reg.A = (v >> 8) as u8;
+                reg.F = (v & 0xFF) as u8;
+            }
+            Register16::BC => {
+                reg.B = (v >> 8) as u8;
+                reg.C = (v & 0xFF) as u8;
+            }
+            Register16::DE => {
+                reg.D = (v >> 8) as u8;
+                reg.E = (v & 0xFF) as u8;
+            }
+            Register16::HL => {
+                reg.H = (v >> 8) as u8;
+                reg.L = (v & 0xFF) as u8;
+            }
+            Register16::PC => reg.PC = v,
+            Register16::SP => reg.SP = v,
+        }
+    }
 }
 
 #[derive(Debug, Copy, Clone)]
