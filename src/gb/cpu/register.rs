@@ -366,6 +366,39 @@ impl Registers {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum Address {
+    BC,
+    DE,
+    HL,
+}
+
+impl Reader8 for Address {
+    fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
+        let src = match *self {
+            BC => Register16::BC,
+            DE => Register16::DE,
+            HL => Register16::HL,
+        };
+
+        let addr = src.read16(reg, ram);
+        ram.read(addr)
+    }
+}
+
+impl Writer8 for Address {
+    fn write8(&self, reg: &mut Registers, ram: &mut Ram, v: u8) {
+        let dst = match *self {
+            BC => Register16::BC,
+            DE => Register16::DE,
+            HL => Register16::HL,
+        };
+
+        let addr = dst.read16(reg, ram);
+        ram.write(addr, v)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
