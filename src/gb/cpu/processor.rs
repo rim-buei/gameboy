@@ -58,6 +58,12 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn inc16<RW: Reader16 + Writer16>(&mut self, rw: RW) -> &mut Self {
+        let v = rw.read16(self.0, self.1).wrapping_add(1);
+        rw.write16(self.0, self.1, v);
+        self
+    }
+
     pub fn sub8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.0.A as i16;
         let b = rhs.read8(self.0, self.1) as i16;
@@ -97,6 +103,12 @@ impl<'a> Processor<'a> {
         self.0.set_flag(Flag::H, (v & 0x0F) == 0x0F);
 
         rw.write8(self.0, self.1, v);
+        self
+    }
+
+    pub fn dec16<RW: Reader16 + Writer16>(&mut self, rw: RW) -> &mut Self {
+        let v = rw.read16(self.0, self.1).wrapping_sub(1);
+        rw.write16(self.0, self.1, v);
         self
     }
 
