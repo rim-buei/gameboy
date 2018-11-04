@@ -169,30 +169,30 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x9D => i.sbc8(R8::L).r(1, 4),             // [SBC A,L] [1  4] [Z 1 H C]
         0x9E => i.sbc8(Address::HL).r(1, 8),       // [SBC A,(HL)] [1  8] [Z 1 H C]
         0x9F => i.sbc8(R8::A).r(1, 4),             // [SBC A,A] [1  4] [Z 1 H C]
-        0xA0 => and_r8(reg, R8::B),                // [AND B] [1  4] [Z 0 1 0]
-        0xA1 => and_r8(reg, R8::C),                // [AND C] [1  4] [Z 0 1 0]
-        0xA2 => and_r8(reg, R8::D),                // [AND D] [1  4] [Z 0 1 0]
-        0xA3 => and_r8(reg, R8::E),                // [AND E] [1  4] [Z 0 1 0]
-        0xA4 => and_r8(reg, R8::H),                // [AND H] [1  4] [Z 0 1 0]
-        0xA5 => and_r8(reg, R8::L),                // [AND L] [1  4] [Z 0 1 0]
-        0xA6 => and_addr(reg, ram, R16::HL),       // [AND (HL)] [1  8] [Z 0 1 0]
-        0xA7 => and_r8(reg, R8::A),                // [AND A] [1  4] [Z 0 1 0]
-        0xA8 => xor_r8(reg, R8::B),                // [XOR B] [1  4] [Z 0 0 0]
-        0xA9 => xor_r8(reg, R8::C),                // [XOR C] [1  4] [Z 0 0 0]
-        0xAA => xor_r8(reg, R8::D),                // [XOR D] [1  4] [Z 0 0 0]
-        0xAB => xor_r8(reg, R8::E),                // [XOR E] [1  4] [Z 0 0 0]
-        0xAC => xor_r8(reg, R8::H),                // [XOR H] [1  4] [Z 0 0 0]
-        0xAD => xor_r8(reg, R8::L),                // [XOR L] [1  4] [Z 0 0 0]
-        0xAE => xor_addr(reg, ram, R16::HL),       // [XOR (HL)] [1  8] [Z 0 0 0]
-        0xAF => xor_r8(reg, R8::A),                // [XOR A] [1  4] [Z 0 0 0]
-        0xB0 => or_r8(reg, R8::B),                 // [OR B] [1  4] [Z 0 0 0]
-        0xB1 => or_r8(reg, R8::C),                 // [OR C] [1  4] [Z 0 0 0]
-        0xB2 => or_r8(reg, R8::D),                 // [OR D] [1  4] [Z 0 0 0]
-        0xB3 => or_r8(reg, R8::E),                 // [OR E] [1  4] [Z 0 0 0]
-        0xB4 => or_r8(reg, R8::H),                 // [OR H] [1  4] [Z 0 0 0]
-        0xB5 => or_r8(reg, R8::L),                 // [OR L] [1  4] [Z 0 0 0]
-        0xB6 => or_addr(reg, ram, R16::HL),        // [OR (HL)] [1  8] [Z 0 0 0]
-        0xB7 => or_r8(reg, R8::A),                 // [OR A] [1  4] [Z 0 0 0]
+        0xA0 => i.and8(R8::B).r(1, 4),             // [AND B] [1  4] [Z 0 1 0]
+        0xA1 => i.and8(R8::C).r(1, 4),             // [AND C] [1  4] [Z 0 1 0]
+        0xA2 => i.and8(R8::D).r(1, 4),             // [AND D] [1  4] [Z 0 1 0]
+        0xA3 => i.and8(R8::E).r(1, 4),             // [AND E] [1  4] [Z 0 1 0]
+        0xA4 => i.and8(R8::H).r(1, 4),             // [AND H] [1  4] [Z 0 1 0]
+        0xA5 => i.and8(R8::L).r(1, 4),             // [AND L] [1  4] [Z 0 1 0]
+        0xA6 => i.and8(Address::HL).r(1, 8),       // [AND (HL)] [1  8] [Z 0 1 0]
+        0xA7 => i.and8(R8::A).r(1, 4),             // [AND A] [1  4] [Z 0 1 0]
+        0xA8 => i.xor8(R8::B).r(1, 4),             // [XOR B] [1  4] [Z 0 0 0]
+        0xA9 => i.xor8(R8::C).r(1, 4),             // [XOR C] [1  4] [Z 0 0 0]
+        0xAA => i.xor8(R8::D).r(1, 4),             // [XOR D] [1  4] [Z 0 0 0]
+        0xAB => i.xor8(R8::E).r(1, 4),             // [XOR E] [1  4] [Z 0 0 0]
+        0xAC => i.xor8(R8::H).r(1, 4),             // [XOR H] [1  4] [Z 0 0 0]
+        0xAD => i.xor8(R8::L).r(1, 4),             // [XOR L] [1  4] [Z 0 0 0]
+        0xAE => i.xor8(Address::HL).r(1, 8),       // [XOR (HL)] [1  8] [Z 0 0 0]
+        0xAF => i.xor8(R8::A).r(1, 4),             // [XOR A] [1  4] [Z 0 0 0]
+        0xB0 => i.or8(R8::B).r(1, 4),              // [OR B] [1  4] [Z 0 0 0]
+        0xB1 => i.or8(R8::C).r(1, 4),              // [OR C] [1  4] [Z 0 0 0]
+        0xB2 => i.or8(R8::D).r(1, 4),              // [OR D] [1  4] [Z 0 0 0]
+        0xB3 => i.or8(R8::E).r(1, 4),              // [OR E] [1  4] [Z 0 0 0]
+        0xB4 => i.or8(R8::H).r(1, 4),              // [OR H] [1  4] [Z 0 0 0]
+        0xB5 => i.or8(R8::L).r(1, 4),              // [OR L] [1  4] [Z 0 0 0]
+        0xB6 => i.or8(Address::HL).r(1, 8),        // [OR (HL)] [1  8] [Z 0 0 0]
+        0xB7 => i.or8(R8::A).r(1, 4),              // [OR A] [1  4] [Z 0 0 0]
         0xB8 => (0, 0),                            // TODO: [CP B] [1  4] [Z 1 H C]
         0xB9 => (0, 0),                            // TODO: [CP C] [1  4] [Z 1 H C]
         0xBA => (0, 0),                            // TODO: [CP D] [1  4] [Z 1 H C]
@@ -239,7 +239,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xE3 => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xE4 => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xE5 => (0, 0),                            // TODO: [PUSH HL] [1  16] [- - - -]
-        0xE6 => and_n8(reg, ram),                  // [AND d8] [2  8] [Z 0 1 0]
+        0xE6 => i.and8(Immediate8).r(2, 8),        // [AND d8] [2  8] [Z 0 1 0]
         0xE7 => (0, 0),                            // TODO: [RST 20H] [1  16] [- - - -]
         0xE8 => (0, 0),                            // TODO: [ADD SP,r8] [2  16] [0 0 H C]
         0xE9 => (0, 0),                            // TODO: [JP (HL)] [1  4] [- - - -]
@@ -247,7 +247,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xEB => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xEC => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xED => i.undefined(opcode).r(1, 0),       // [Undefined]
-        0xEE => xor_n8(reg, ram),                  // [XOR d8] [2  8] [Z 0 0 0]
+        0xEE => i.xor8(Immediate8).r(2, 8),        // [XOR d8] [2  8] [Z 0 0 0]
         0xEF => (0, 0),                            // TODO: [RST 28H] [1  16] [- - - -]
         0xF0 => (0, 0),                            // TODO: [LDH A,(a8)] [2  12] [- - - -]
         0xF1 => (0, 0),                            // TODO: [POP AF] [1  12] [Z N H C]
@@ -255,7 +255,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF3 => (0, 0),                            // TODO: [DI] [1  4] [- - - -]
         0xF4 => i.undefined(opcode).r(1, 0),       // [Undefined]
         0xF5 => (0, 0),                            // TODO: [PUSH AF] [1  16] [- - - -]
-        0xF6 => or_n8(reg, ram),                   // [OR d8] [2  8] [Z 0 0 0]
+        0xF6 => i.or8(Immediate8).r(2, 8),         // [OR d8] [2  8] [Z 0 0 0]
         0xF7 => (0, 0),                            // TODO: [RST 30H] [1  16] [- - - -]
         0xF8 => (0, 0),                            // TODO: [LD HL,SP+r8] [2  12] [0 0 H C]
         0xF9 => (0, 0),                            // TODO: [LD SP,HL] [1  8] [- - - -]
@@ -552,7 +552,7 @@ impl<'a> Instruction<'a> {
         let c = a + b;
         let hc = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
 
-        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.disable_flag(Flag::N);
         self.0.set_flag(Flag::H, hc);
         self.0.set_flag(Flag::C, c > 0xFF);
@@ -568,7 +568,7 @@ impl<'a> Instruction<'a> {
         let c = a + b + carry;
         let hc = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
 
-        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.disable_flag(Flag::N);
         self.0.set_flag(Flag::H, hc);
         self.0.set_flag(Flag::C, c > 0xFF);
@@ -580,9 +580,9 @@ impl<'a> Instruction<'a> {
     fn inc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let v = rw.read8(self.0, self.1).wrapping_add(1);
 
-        self.0.set_flag(Flag::Z, v == 0);
+        self.0.set_flag(Flag::Z, v == 0x00);
         self.0.disable_flag(Flag::N);
-        self.0.set_flag(Flag::H, (v & 0x0F) == 0);
+        self.0.set_flag(Flag::H, (v & 0x0F) == 0x00);
 
         rw.write8(self.0, self.1, v);
         self
@@ -594,7 +594,7 @@ impl<'a> Instruction<'a> {
         let c = a - b;
         let hc = ((a & 0x0F) - (b & 0x0F)) < 0;
 
-        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.enable_flag(Flag::N);
         self.0.set_flag(Flag::H, hc);
         self.0.set_flag(Flag::C, c < 0);
@@ -610,7 +610,7 @@ impl<'a> Instruction<'a> {
         let c = a - b - carry;
         let hc = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
 
-        self.0.set_flag(Flag::Z, (c & 0xFF) == 0);
+        self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.enable_flag(Flag::N);
         self.0.set_flag(Flag::H, hc);
         self.0.set_flag(Flag::C, c < 0);
@@ -622,7 +622,7 @@ impl<'a> Instruction<'a> {
     fn dec8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let v = rw.read8(self.0, self.1).wrapping_sub(1);
 
-        self.0.set_flag(Flag::Z, v == 0);
+        self.0.set_flag(Flag::Z, v == 0x00);
         self.0.enable_flag(Flag::N);
         self.0.set_flag(Flag::H, (v & 0x0F) == 0x0F);
 
@@ -630,55 +630,46 @@ impl<'a> Instruction<'a> {
         self
     }
 
+    fn and8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let c = self.0.A & rhs.read8(self.0, self.1);
+
+        self.0.set_flag(Flag::Z, c == 0x00);
+        self.0.disable_flag(Flag::N);
+        self.0.enable_flag(Flag::H);
+        self.0.disable_flag(Flag::C);
+
+        self.0.A = c;
+        self
+    }
+
+    fn or8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let c = self.0.A | rhs.read8(self.0, self.1);
+
+        self.0.set_flag(Flag::Z, c == 0x00);
+        self.0.disable_flag(Flag::N);
+        self.0.disable_flag(Flag::H);
+        self.0.disable_flag(Flag::C);
+
+        self.0.A = c;
+        self
+    }
+
+    fn xor8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let c = self.0.A ^ rhs.read8(self.0, self.1);
+
+        self.0.set_flag(Flag::Z, c == 0x00);
+        self.0.disable_flag(Flag::N);
+        self.0.disable_flag(Flag::H);
+        self.0.disable_flag(Flag::C);
+
+        self.0.A = c;
+        self
+    }
+
     fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
     }
-}
-
-fn and_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.and8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn and_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.and8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn and_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.and8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
-}
-
-fn or_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.or8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn or_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.or8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn or_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.or8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
-}
-
-fn xor_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
-    reg.xor8(R8::A, reg.get8(rhs));
-    (1, 4)
-}
-
-fn xor_addr(reg: &mut Registers, ram: &mut Ram, rhs: R16) -> (u8, u8) {
-    reg.xor8(R8::A, ram.read(reg.get16(rhs)));
-    (1, 8)
-}
-
-fn xor_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    reg.xor8(R8::A, ram.read(reg.get_PC() + 1));
-    (2, 8)
 }
 
 #[cfg(test)]
@@ -926,6 +917,86 @@ mod tests {
             i.sbc8(R8::B);
             assert_eq!(test.c, reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_logical8() {
+        struct TestCase {
+            a: u8,
+            b: u8,
+            and: u8,
+            and_flags: FlagZNHC,
+            or: u8,
+            or_flags: FlagZNHC,
+            xor: u8,
+            xor_flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x01,
+                b: 0x01,
+                and: 0x01,
+                and_flags: FlagZNHC(false, false, true, false),
+                or: 0x01,
+                or_flags: FlagZNHC(false, false, false, false),
+                xor: 0x00,
+                xor_flags: FlagZNHC(true, false, false, false),
+            },
+            TestCase {
+                a: 0x01,
+                b: 0x00,
+                and: 0x00,
+                and_flags: FlagZNHC(true, false, true, false),
+                or: 0x01,
+                or_flags: FlagZNHC(false, false, false, false),
+                xor: 0x01,
+                xor_flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x00,
+                b: 0x00,
+                and: 0x00,
+                and_flags: FlagZNHC(true, false, true, false),
+                or: 0x00,
+                or_flags: FlagZNHC(true, false, false, false),
+                xor: 0x00,
+                xor_flags: FlagZNHC(true, false, false, false),
+            },
+        ] {
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+                reg.B = test.b;
+
+                let mut i = Instruction(&mut reg, &mut ram);
+                i.and8(R8::B);
+                assert_eq!(test.and, reg.A);
+                assert_eq!(test.and_flags, FlagZNHC::new(reg));
+            }
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+                reg.B = test.b;
+
+                let mut i = Instruction(&mut reg, &mut ram);
+                i.or8(R8::B);
+                assert_eq!(test.or, reg.A);
+                assert_eq!(test.or_flags, FlagZNHC::new(reg));
+            }
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+                reg.B = test.b;
+
+                let mut i = Instruction(&mut reg, &mut ram);
+                i.xor8(R8::B);
+                assert_eq!(test.xor, reg.A);
+                assert_eq!(test.xor_flags, FlagZNHC::new(reg));
+            }
         }
     }
 }
