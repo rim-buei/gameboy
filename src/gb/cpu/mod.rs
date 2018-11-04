@@ -2,14 +2,12 @@ pub mod register;
 
 mod instruction;
 mod io;
+mod processor;
 
 use super::ram::Ram;
 
-use self::instruction::exec;
-use self::instruction::exec_ex;
-use self::register::Register16;
-use self::register::Register8;
-use self::register::Registers;
+use self::instruction::{exec, exec_prefix_cb};
+use self::register::{Register16, Register8, Registers};
 
 pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
     let addr = reg.PC;
@@ -23,7 +21,7 @@ pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
         let addr = reg.PC.wrapping_add(1);
         let opcode = ram.read(addr);
 
-        exec_ex(opcode, reg, ram)
+        exec_prefix_cb(opcode, reg, ram)
     };
 
     reg.PC = reg.PC.wrapping_add(bytes as u16);
