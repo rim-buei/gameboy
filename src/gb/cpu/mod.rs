@@ -1,6 +1,7 @@
 pub mod register;
 
 mod instruction;
+mod io;
 
 use super::ram::Ram;
 
