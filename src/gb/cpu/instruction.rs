@@ -13,48 +13,48 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x01 => (0, 0),                            // TODO: [LD BC,d16] [3  12] [- - - -]
         0x02 => i.ld8(Address::BC, R8::A).r(1, 8), // [LD (BC),A] [1  8] [- - - -]
         0x03 => (0, 0),                            // TODO: [INC BC] [1  8] [- - - -]
-        0x04 => inc_r8(reg, R8::B),                // [INC B] [1  4] [Z 0 H -]
-        0x05 => dec_r8(reg, R8::B),                // [DEC B] [1  4] [Z 1 H -]
+        0x04 => i.inc8(R8::B).r(1, 4),             // [INC B] [1  4] [Z 0 H -]
+        0x05 => i.dec8(R8::B).r(1, 4),             // [DEC B] [1  4] [Z 1 H -]
         0x06 => i.ld8(R8::B, Immediate8).r(2, 8),  // [LD B,d8] [2  8] [- - - -]
         0x07 => (0, 0),                            // TODO: [RLCA] [1  4] [0 0 0 C]
         0x08 => (0, 0),                            // TODO: [LD (a16),SP] [3  20] [- - - -]
         0x09 => (0, 0),                            // TODO: [ADD HL,BC] [1  8] [- 0 H C]
         0x0A => i.ld8(R8::A, Address::BC).r(1, 8), // [LD A,(BC)] [1  8] [- - - -]
         0x0B => (0, 0),                            // TODO: [DEC BC] [1  8] [- - - -]
-        0x0C => inc_r8(reg, R8::C),                // [INC C] [1  4] [Z 0 H -]
-        0x0D => dec_r8(reg, R8::C),                // [DEC C] [1  4] [Z 1 H -]
+        0x0C => i.inc8(R8::C).r(1, 4),             // [INC C] [1  4] [Z 0 H -]
+        0x0D => i.dec8(R8::C).r(1, 4),             // [DEC C] [1  4] [Z 1 H -]
         0x0E => i.ld8(R8::C, Immediate8).r(2, 8),  // [LD C,d8] [2  8] [- - - -]
         0x0F => (0, 0),                            // TODO: [RRCA] [1  4] [0 0 0 C]
         0x10 => (0, 0),                            // TODO: [STOP 0] [2  4] [- - - -]
         0x11 => (0, 0),                            // TODO: [LD DE,d16] [3  12] [- - - -]
         0x12 => i.ld8(Address::DE, R8::A).r(1, 8), // [LD (DE),A] [1  8] [- - - -]
         0x13 => (0, 0),                            // TODO: [INC DE] [1  8] [- - - -]
-        0x14 => inc_r8(reg, R8::D),                // [INC D] [1  4] [Z 0 H -]
-        0x15 => dec_r8(reg, R8::D),                // [DEC D] [1  4] [Z 1 H -]
+        0x14 => i.inc8(R8::D).r(1, 4),             // [INC D] [1  4] [Z 0 H -]
+        0x15 => i.dec8(R8::D).r(1, 4),             // [DEC D] [1  4] [Z 1 H -]
         0x16 => i.ld8(R8::D, Immediate8).r(2, 8),  // [LD D,d8] [2  8] [- - - -]
         0x17 => (0, 0),                            // TODO: [RLA] [1  4] [0 0 0 C]
         0x18 => (0, 0),                            // TODO: [JR r8] [2  12] [- - - -]
         0x19 => (0, 0),                            // TODO: [ADD HL,DE] [1  8] [- 0 H C]
         0x1A => i.ld8(R8::A, Address::DE).r(1, 8), // [LD A,(DE)] [1  8] [- - - -]
         0x1B => (0, 0),                            // TODO: [DEC DE] [1  8] [- - - -]
-        0x1C => inc_r8(reg, R8::E),                // [INC E] [1  4] [Z 0 H -]
-        0x1D => dec_r8(reg, R8::E),                // [DEC E] [1  4] [Z 1 H -]
+        0x1C => i.inc8(R8::E).r(1, 4),             // [INC E] [1  4] [Z 0 H -]
+        0x1D => i.dec8(R8::E).r(1, 4),             // [DEC E] [1  4] [Z 1 H -]
         0x1E => i.ld8(R8::E, Immediate8).r(2, 8),  // [LD E,d8] [2  8] [- - - -]
         0x1F => (0, 0),                            // TODO: [RRA] [1  4] [0 0 0 C]
         0x20 => (0, 0),                            // TODO: [JR NZ,r8] [2  12/8] [- - - -]
         0x21 => (0, 0),                            // TODO: [LD HL,d16] [3  12] [- - - -]
         0x22 => (0, 0),                            // TODO: [LD (HL+),A] [1  8] [- - - -]
         0x23 => (0, 0),                            // TODO: [INC HL] [1  8] [- - - -]
-        0x24 => inc_r8(reg, R8::H),                // [INC H] [1  4] [Z 0 H -]
-        0x25 => dec_r8(reg, R8::H),                // [DEC H] [1  4] [Z 1 H -]
+        0x24 => i.inc8(R8::H).r(1, 4),             // [INC H] [1  4] [Z 0 H -]
+        0x25 => i.dec8(R8::H).r(1, 4),             // [DEC H] [1  4] [Z 1 H -]
         0x26 => i.ld8(R8::H, Immediate8).r(2, 8),  // [LD H,d8] [2  8] [- - - -]
         0x27 => (0, 0),                            // TODO: [DAA] [1  4] [Z - 0 C]
         0x28 => (0, 0),                            // TODO: [JR Z,r8] [2  12/8] [- - - -]
         0x29 => (0, 0),                            // TODO: [ADD HL,HL] [1  8] [- 0 H C]
         0x2A => (0, 0),                            // TODO: [LD A,(HL+)] [1  8] [- - - -]
         0x2B => (0, 0),                            // TODO: [DEC HL] [1  8] [- - - -]
-        0x2C => inc_r8(reg, R8::L),                // [INC L] [1  4] [Z 0 H -]
-        0x2D => dec_r8(reg, R8::L),                // [DEC L] [1  4] [Z 1 H -]
+        0x2C => i.inc8(R8::L).r(1, 4),             // [INC L] [1  4] [Z 0 H -]
+        0x2D => i.dec8(R8::L).r(1, 4),             // [DEC L] [1  4] [Z 1 H -]
         0x2E => i.ld8(R8::L, Immediate8).r(2, 8),  // [LD L,d8] [2  8] [- - - -]
         0x2F => (0, 0),                            // TODO: [CPL] [1  4] [- 1 1 -]
         0x30 => (0, 0),                            // TODO: [JR NC,r8] [2  12/8] [- - - -]
@@ -69,8 +69,8 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x39 => (0, 0),                            // TODO: [ADD HL,SP] [1  8] [- 0 H C]
         0x3A => (0, 0),                            // TODO: [LD A,(HL-)] [1  8] [- - - -]
         0x3B => (0, 0),                            // TODO: [DEC SP] [1  8] [- - - -]
-        0x3C => inc_r8(reg, R8::A),                // [INC A] [1  4] [Z 0 H -]
-        0x3D => dec_r8(reg, R8::A),                // [DEC A] [1  4] [Z 1 H -]
+        0x3C => i.inc8(R8::A).r(1, 4),             // [INC A] [1  4] [Z 0 H -]
+        0x3D => i.dec8(R8::A).r(1, 4),             // [DEC A] [1  4] [Z 1 H -]
         0x3E => i.ld8(R8::A, Immediate8).r(2, 8),  // [LD A,d8] [2  8] [- - - -]
         0x3F => (0, 0),                            // TODO: [CCF] [1  4] [- 0 0 C]
         0x40 => i.ld8(R8::B, R8::B).r(1, 4),       // [LD B,B] [1  4] [- - - -]
@@ -577,6 +577,17 @@ impl<'a> Instruction<'a> {
         self
     }
 
+    fn inc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let v = rw.read8(self.0, self.1).wrapping_add(1);
+
+        self.0.set_flag(Flag::Z, v == 0);
+        self.0.disable_flag(Flag::N);
+        self.0.set_flag(Flag::H, (v & 0x0F) == 0);
+
+        rw.write8(self.0, self.1, v);
+        self
+    }
+
     fn sub8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.0.A as i16;
         let b = rhs.read8(self.0, self.1) as i16;
@@ -608,20 +619,21 @@ impl<'a> Instruction<'a> {
         self
     }
 
+    fn dec8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let v = rw.read8(self.0, self.1).wrapping_sub(1);
+
+        self.0.set_flag(Flag::Z, v == 0);
+        self.0.enable_flag(Flag::N);
+        self.0.set_flag(Flag::H, (v & 0x0F) == 0x0F);
+
+        rw.write8(self.0, self.1, v);
+        self
+    }
+
     fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
     }
-}
-
-fn inc_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
-    reg.inc8(lhs);
-    (1, 4)
-}
-
-fn dec_r8(reg: &mut Registers, lhs: R8) -> (u8, u8) {
-    reg.dec8(lhs);
-    (1, 4)
 }
 
 fn and_r8(reg: &mut Registers, rhs: R8) -> (u8, u8) {
