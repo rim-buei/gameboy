@@ -366,6 +366,7 @@ impl Registers {
     }
 }
 
+// TODO: Should be moved to other module
 #[derive(Debug, Copy, Clone)]
 pub enum Address {
     BC,
@@ -396,6 +397,16 @@ impl Writer8 for Address {
 
         let addr = dst.read16(reg, ram);
         ram.write(addr, v)
+    }
+}
+
+// TODO: Should be moved to other module
+#[derive(Debug, Copy, Clone)]
+pub struct Immediate8;
+
+impl Reader8 for Immediate8 {
+    fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
+        ram.read(reg.PC + 1)
     }
 }
 
