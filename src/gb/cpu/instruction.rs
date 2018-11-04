@@ -540,10 +540,6 @@ impl<'a> Instruction<'a> {
         (opsize, cycle)
     }
 
-    fn read8<R: Reader8>(&mut self, reader: R) -> u8 {
-        reader.read8(self.0, self.1)
-    }
-
     fn ld8<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
         let v = rhs.read8(self.0, self.1);
         lhs.write8(self.0, self.1, v);
@@ -676,14 +672,35 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_ld8() {
+    fn test_ld8_r8_r8() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00]);
-        reg.set8(R8::A, 0xAA);
+        reg.A = 0xAA;
 
         let mut i = Instruction(&mut reg, &mut ram);
         i.ld8(R8::B, R8::A);
-        assert_eq!(0xAA, i.read8(R8::B));
+        assert_eq!(0xAA, reg.B);
+    }
+
+    #[test]
+    fn test_ld8_r8_hl() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xAA]);
+        reg.L = 0x01;
+
+        let mut i = Instruction(&mut reg, &mut ram);
+        i.ld8(R8::B, Address::HL);
+        assert_eq!(0xAA, reg.B);
+    }
+
+    #[test]
+    fn test_ld8_r8_d8() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xAA]);
+
+        let mut i = Instruction(&mut reg, &mut ram);
+        i.ld8(R8::B, Immediate8);
+        assert_eq!(0xAA, reg.B);
     }
 
     #[test]
