@@ -1,10 +1,13 @@
 use super::super::ram::Ram;
 
+use super::io::{Reader16, Reader8, Writer16, Writer8};
 use super::register::Register16 as R16;
 use super::register::Register8 as R8;
 use super::register::Registers;
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
+    let mut i = Instruction(reg, ram);
+
     match opcode {
         0x00 => (1, 4),                               // [NOP] [1  4] [- - - -]
         0x01 => (0, 0),                               // TODO: [LD BC,d16] [3  12] [- - - -]
@@ -70,7 +73,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x3D => dec_r8(reg, R8::A),                   // [DEC A] [1  4] [Z 1 H -]
         0x3E => ld_r8_n8(reg, ram, R8::A),            // [LD A,d8] [2  8] [- - - -]
         0x3F => (0, 0),                               // TODO: [CCF] [1  4] [- 0 0 C]
-        0x40 => ld_r8_r8(reg, R8::B, R8::B),          // [LD B,B] [1  4] [- - - -]
+        0x40 => i.ld8(R8::B, R8::B).r(1, 4),          // [LD B,B] [1  4] [- - - -]
         0x41 => ld_r8_r8(reg, R8::B, R8::C),          // [LD B,C] [1  4] [- - - -]
         0x42 => ld_r8_r8(reg, R8::B, R8::D),          // [LD B,D] [1  4] [- - - -]
         0x43 => ld_r8_r8(reg, R8::B, R8::E),          // [LD B,E] [1  4] [- - - -]
@@ -209,7 +212,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xC8 => (0, 0),                               // TODO: [RET Z] [1  20/8] [- - - -]
         0xC9 => (0, 0),                               // TODO: [RET] [1  16] [- - - -]
         0xCA => (0, 0),                               // TODO: [JP Z,a16] [3  16/12] [- - - -]
-        0xCB => unsupported(opcode),                  // [PREFIX CB] [1  4] [- - - -]
+        0xCB => i.undefined(opcode).r(1, 0),          // [PREFIX CB] [1  4] [- - - -]
         0xCC => (0, 0),                               // TODO: [CALL Z,a16] [3  24/12] [- - - -]
         0xCD => (0, 0),                               // TODO: [CALL a16] [3  24] [- - - -]
         0xCE => adc_n8(reg, ram),                     // [ADC A,d8] [2  8] [Z 0 H C]
@@ -217,7 +220,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD0 => (0, 0),                               // TODO: [RET NC] [1  20/8] [- - - -]
         0xD1 => (0, 0),                               // TODO: [POP DE] [1  12] [- - - -]
         0xD2 => (0, 0),                               // TODO: [JP NC,a16] [3  16/12] [- - - -]
-        0xD3 => unsupported(opcode),                  // [Unsupported]
+        0xD3 => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xD4 => (0, 0),                               // TODO: [CALL NC,a16] [3  24/12] [- - - -]
         0xD5 => (0, 0),                               // TODO: [PUSH DE] [1  16] [- - - -]
         0xD6 => sub_n8(reg, ram),                     // [SUB A,d8] [2  8] [Z 1 H C]
@@ -225,32 +228,32 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD8 => (0, 0),                               // TODO: [RET C] [1  20/8] [- - - -]
         0xD9 => (0, 0),                               // TODO: [RETI] [1  16] [- - - -]
         0xDA => (0, 0),                               // TODO: [JP C,a16] [3  16/12] [- - - -]
-        0xDB => unsupported(opcode),                  // [Unsupported]
+        0xDB => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xDC => (0, 0),                               // TODO: [CALL C,a16] [3  24/12] [- - - -]
-        0xDD => unsupported(opcode),                  // [Unsupported]
+        0xDD => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xDE => sbc_n8(reg, ram),                     // [SBC A,d8] [2  8] [Z 1 H C]
         0xDF => (0, 0),                               // TODO: [RST 18H] [1  16] [- - - -]
         0xE0 => (0, 0),                               // TODO: [LDH (a8),A] [2  12] [- - - -]
         0xE1 => (0, 0),                               // TODO: [POP HL] [1  12] [- - - -]
         0xE2 => (0, 0),                               // TODO: [LD (C),A] [2  8] [- - - -]
-        0xE3 => unsupported(opcode),                  // [Unsupported]
-        0xE4 => unsupported(opcode),                  // [Unsupported]
+        0xE3 => i.undefined(opcode).r(1, 0),          // [Undefined]
+        0xE4 => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xE5 => (0, 0),                               // TODO: [PUSH HL] [1  16] [- - - -]
         0xE6 => and_n8(reg, ram),                     // [AND d8] [2  8] [Z 0 1 0]
         0xE7 => (0, 0),                               // TODO: [RST 20H] [1  16] [- - - -]
         0xE8 => (0, 0),                               // TODO: [ADD SP,r8] [2  16] [0 0 H C]
         0xE9 => (0, 0),                               // TODO: [JP (HL)] [1  4] [- - - -]
         0xEA => (0, 0),                               // TODO: [LD (a16),A] [3  16] [- - - -]
-        0xEB => unsupported(opcode),                  // [Unsupported]
-        0xEC => unsupported(opcode),                  // [Unsupported]
-        0xED => unsupported(opcode),                  // [Unsupported]
+        0xEB => i.undefined(opcode).r(1, 0),          // [Undefined]
+        0xEC => i.undefined(opcode).r(1, 0),          // [Undefined]
+        0xED => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xEE => xor_n8(reg, ram),                     // [XOR d8] [2  8] [Z 0 0 0]
         0xEF => (0, 0),                               // TODO: [RST 28H] [1  16] [- - - -]
         0xF0 => (0, 0),                               // TODO: [LDH A,(a8)] [2  12] [- - - -]
         0xF1 => (0, 0),                               // TODO: [POP AF] [1  12] [Z N H C]
         0xF2 => (0, 0),                               // TODO: [LD A,(C)] [2  8] [- - - -]
         0xF3 => (0, 0),                               // TODO: [DI] [1  4] [- - - -]
-        0xF4 => unsupported(opcode),                  // [Unsupported]
+        0xF4 => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xF5 => (0, 0),                               // TODO: [PUSH AF] [1  16] [- - - -]
         0xF6 => or_n8(reg, ram),                      // [OR d8] [2  8] [Z 0 0 0]
         0xF7 => (0, 0),                               // TODO: [RST 30H] [1  16] [- - - -]
@@ -258,15 +261,17 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF9 => (0, 0),                               // TODO: [LD SP,HL] [1  8] [- - - -]
         0xFA => (0, 0),                               // TODO: [LD A,(a16)] [3  16] [- - - -]
         0xFB => (0, 0),                               // TODO: [EI] [1  4] [- - - -]
-        0xFC => unsupported(opcode),                  // [Unsupported]
-        0xFD => unsupported(opcode),                  // [Unsupported]
+        0xFC => i.undefined(opcode).r(1, 0),          // [Undefined]
+        0xFD => i.undefined(opcode).r(1, 0),          // [Undefined]
         0xFE => (0, 0),                               // TODO: [CP d8] [2  8] [Z 1 H C]
         0xFF => (0, 0),                               // TODO: [RST 38H] [1  16] [- - - -]
-        _ => unsupported(opcode),
+        _ => i.undefined(opcode).r(1, 0),
     }
 }
 
 pub fn exec_ex(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
+    let mut i = Instruction(reg, ram);
+
     match opcode {
         0x00 => (0, 0), // TODO: [RLC B] [2  8] [Z 0 0 C]
         0x01 => (0, 0), // TODO: [RLC C] [2  8] [Z 0 0 C]
@@ -524,7 +529,30 @@ pub fn exec_ex(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xFD => (0, 0), // TODO: [SET 7,L] [2  8] [- - - -]
         0xFE => (0, 0), // TODO: [SET 7,(HL)] [2  16] [- - - -]
         0xFF => (0, 0), // TODO: [SET 7,A] [2  8] [- - - -]
-        _ => unsupported(opcode),
+        _ => i.undefined(opcode).r(1, 0),
+    }
+}
+
+struct Instruction<'a>(&'a mut Registers, &'a mut Ram);
+
+impl<'a> Instruction<'a> {
+    fn r(&mut self, opsize: u8, cycle: u8) -> (u8, u8) {
+        (opsize, cycle)
+    }
+
+    fn read8<R: Reader8>(&mut self, reader: R) -> u8 {
+        reader.read8(self.0, self.1)
+    }
+
+    fn ld8<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
+        let v = rhs.read8(self.0, self.1);
+        lhs.write8(self.0, self.1, v);
+        self
+    }
+
+    fn undefined(&mut self, opcode: u8) -> &mut Self {
+        println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
+        self
     }
 }
 
@@ -671,6 +699,17 @@ fn xor_n8(reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_ld8() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00]);
+        reg.set8(R8::A, 0xAA);
+
+        let mut i = Instruction(&mut reg, &mut ram);
+        i.ld8(R8::B, R8::A);
+        assert_eq!(0xAA, i.read8(R8::B));
+    }
 
     #[test]
     fn test_ld_r8_n8() {
