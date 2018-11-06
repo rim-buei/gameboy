@@ -263,7 +263,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xFB => (0, 0),                                // TODO: [EI] [1  4] [- - - -]
         0xFC => p.undefined(opcode).r(1, 0),           // [Undefined]
         0xFD => p.undefined(opcode).r(1, 0),           // [Undefined]
-        0xFE => (0, 0),                                // TODO: [CP d8] [2  8] [Z 1 H C]
+        0xFE => p.cp8(Immediate8).r(2, 8),             // [CP d8] [2  8] [Z 1 H C]
         0xFF => (0, 0),                                // TODO: [RST 38H] [1  16] [- - - -]
         _ => p.undefined(opcode).r(1, 0),
     }
