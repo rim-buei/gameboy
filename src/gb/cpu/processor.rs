@@ -154,6 +154,13 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn cp8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        let temp = self.0.A;
+        self.sub8(rhs);
+        self.0.A = temp;
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
@@ -513,5 +520,18 @@ mod tests {
                 assert_eq!(test.xor_flags, FlagZNHC::new(reg));
             }
         }
+    }
+
+    #[test]
+    fn test_processor_cp8() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00]);
+        reg.enable_flag(Flag::C);
+        reg.B = 0x01;
+
+        let mut p = Processor(&mut reg, &mut ram);
+        p.cp8(R8::B);
+        assert_eq!(0x00, reg.A);
+        assert_eq!(FlagZNHC(false, true, true, true), FlagZNHC::new(reg));
     }
 }
