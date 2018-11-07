@@ -192,6 +192,27 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn push16<R: Reader16>(&mut self, r: R) -> &mut Self {
+        let sp = R16::SP.read16(self.0, self.1);
+        let v = r.read16(self.0, self.1);
+        self.1.write(sp.wrapping_sub(1), (v >> 8) as u8);
+        self.1.write(sp.wrapping_sub(2), (v & 0xFF) as u8);
+
+        self.dec16(R16::SP);
+        self.dec16(R16::SP);
+        self
+    }
+
+    pub fn pop16<W: Writer16>(&mut self, w: W) -> &mut Self {
+        let sp = R16::SP.read16(self.0, self.1);
+        let v = self.1.read(sp) as u16 | ((self.1.read(sp.wrapping_add(1)) as u16) << 8);
+        w.write16(self.0, self.1, v);
+
+        self.inc16(R16::SP);
+        self.inc16(R16::SP);
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
@@ -608,5 +629,22 @@ mod tests {
         p.cp8(R8::B);
         assert_eq!(0x00, reg.A);
         assert_eq!(FlagZNHC(false, true, true, true), FlagZNHC::new(reg));
+    }
+
+    #[test]
+    fn test_processor_push_pop() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x00]);
+        R16::SP.write16(&mut reg, &mut ram, 0x0002);
+        R16::BC.write16(&mut reg, &mut ram, 0xABCD);
+
+        let mut p = Processor(&mut reg, &mut ram);
+        p.push16(R16::BC);
+        assert_eq!(0xAB, p.1.read(0x0001));
+        assert_eq!(0xCD, p.1.read(0x0000));
+        assert_eq!(0x0000, p.0.SP);
+        p.pop16(R16::DE);
+        assert_eq!(0x0002, p.0.SP);
+        assert_eq!(0xABCD, R16::DE.read16(&mut reg, &mut ram));
     }
 }
