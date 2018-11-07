@@ -1,7 +1,7 @@
 use super::super::ram::Ram;
 
 use super::io::{Reader16, Reader8, Writer16, Writer8};
-use super::register::{Address, Flag, Registers};
+use super::register::{Address, Flag, Register16 as R16, Register8 as R8, Registers};
 
 pub struct Processor<'a>(pub &'a mut Registers, pub &'a mut Ram);
 
@@ -34,6 +34,20 @@ impl<'a> Processor<'a> {
         self.0.set_flag(Flag::C, c > 0xFF);
 
         self.0.A = c as u8;
+        self
+    }
+
+    pub fn add16<R: Reader16>(&mut self, rhs: R) -> &mut Self {
+        let a = R16::HL.read16(self.0, self.1) as u32;
+        let b = rhs.read16(self.0, self.1) as u32;
+        let c = a + b;
+        let hc = ((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF;
+
+        self.0.disable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::C, c > 0xFFFF);
+
+        R16::HL.write16(self.0, self.1, c as u16);
         self
     }
 
@@ -169,8 +183,6 @@ impl<'a> Processor<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::register::Register16 as R16;
-    use super::super::register::Register8 as R8;
     use super::super::register::{Immediate16, Immediate8};
 
     use super::*;
@@ -273,6 +285,52 @@ mod tests {
             let mut p = Processor(&mut reg, &mut ram);
             p.add8(R8::B);
             assert_eq!(test.c, reg.A);
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_processor_add16() {
+        struct TestCase {
+            a: u16,
+            b: u16,
+            c: u16,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x00FF,
+                b: 0x0001,
+                c: 0x0100,
+                flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0FFF,
+                b: 0x0001,
+                c: 0x1000,
+                flags: FlagZNHC(false, false, true, false),
+            },
+            TestCase {
+                a: 0xF000,
+                b: 0x1000,
+                c: 0x0000,
+                flags: FlagZNHC(false, false, false, true),
+            },
+            TestCase {
+                a: 0xFFFF,
+                b: 0x0001,
+                c: 0x0000,
+                flags: FlagZNHC(false, false, true, true),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            R16::HL.write16(&mut reg, &mut ram, test.a);
+            R16::BC.write16(&mut reg, &mut ram, test.b);
+
+            let mut p = Processor(&mut reg, &mut ram);
+            p.add16(R16::BC);
+            assert_eq!(test.c, R16::HL.read16(&mut reg, &mut ram));
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }

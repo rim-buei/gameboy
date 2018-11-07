@@ -7,7 +7,7 @@ mod processor;
 use super::ram::Ram;
 
 use self::instruction::{exec, exec_prefix_cb};
-use self::register::{Register16, Register8, Registers};
+use self::register::Registers;
 
 pub fn step(reg: &mut Registers, ram: &mut Ram) -> u8 {
     let addr = reg.PC;

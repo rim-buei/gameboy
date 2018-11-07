@@ -1,9 +1,9 @@
 use super::super::ram::Ram;
 
 use super::processor::Processor;
-use super::register::Register16 as R16;
-use super::register::Register8 as R8;
-use super::register::{Address, Immediate16, Immediate8, Registers};
+use super::register::{
+    Address, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers,
+};
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
     let mut p = Processor(reg, ram);
@@ -18,7 +18,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x06 => p.ld8(R8::B, Immediate8).r(2, 8),      // [LD B,d8] [2  8] [- - - -]
         0x07 => (0, 0),                                // TODO: [RLCA] [1  4] [0 0 0 C]
         0x08 => (0, 0),                                // TODO: [LD (a16),SP] [3  20] [- - - -]
-        0x09 => (0, 0),                                // TODO: [ADD HL,BC] [1  8] [- 0 H C]
+        0x09 => p.add16(R16::BC).r(1, 8),              // [ADD HL,BC] [1  8] [- 0 H C]
         0x0A => p.ld8(R8::A, Address::BC).r(1, 8),     // [LD A,(BC)] [1  8] [- - - -]
         0x0B => p.dec16(R16::BC).r(1, 8),              // [DEC BC] [1  8] [- - - -]
         0x0C => p.inc8(R8::C).r(1, 4),                 // [INC C] [1  4] [Z 0 H -]
@@ -34,7 +34,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x16 => p.ld8(R8::D, Immediate8).r(2, 8),      // [LD D,d8] [2  8] [- - - -]
         0x17 => (0, 0),                                // TODO: [RLA] [1  4] [0 0 0 C]
         0x18 => (0, 0),                                // TODO: [JR r8] [2  12] [- - - -]
-        0x19 => (0, 0),                                // TODO: [ADD HL,DE] [1  8] [- 0 H C]
+        0x19 => p.add16(R16::DE).r(1, 8),              // [ADD HL,DE] [1  8] [- 0 H C]
         0x1A => p.ld8(R8::A, Address::DE).r(1, 8),     // [LD A,(DE)] [1  8] [- - - -]
         0x1B => p.dec16(R16::DE).r(1, 8),              // [DEC DE] [1  8] [- - - -]
         0x1C => p.inc8(R8::E).r(1, 4),                 // [INC E] [1  4] [Z 0 H -]
@@ -50,7 +50,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x26 => p.ld8(R8::H, Immediate8).r(2, 8),      // [LD H,d8] [2  8] [- - - -]
         0x27 => (0, 0),                                // TODO: [DAA] [1  4] [Z - 0 C]
         0x28 => (0, 0),                                // TODO: [JR Z,r8] [2  12/8] [- - - -]
-        0x29 => (0, 0),                                // TODO: [ADD HL,HL] [1  8] [- 0 H C]
+        0x29 => p.add16(R16::HL).r(1, 8),              // [ADD HL,HL] [1  8] [- 0 H C]
         0x2A => (0, 0),                                // TODO: [LD A,(HL+)] [1  8] [- - - -]
         0x2B => p.dec16(R16::HL).r(1, 8),              // [DEC HL] [1  8] [- - - -]
         0x2C => p.inc8(R8::L).r(1, 4),                 // [INC L] [1  4] [Z 0 H -]
@@ -66,7 +66,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x36 => (0, 0),                                // TODO: [LD (HL),d8] [2  12] [- - - -]
         0x37 => (0, 0),                                // TODO: [SCF] [1  4] [- 0 0 1]
         0x38 => (0, 0),                                // TODO: [JR C,r8] [2  12/8] [- - - -]
-        0x39 => (0, 0),                                // TODO: [ADD HL,SP] [1  8] [- 0 H C]
+        0x39 => p.add16(R16::SP).r(1, 8),              // [ADD HL,SP] [1  8] [- 0 H C]
         0x3A => (0, 0),                                // TODO: [LD A,(HL-)] [1  8] [- - - -]
         0x3B => p.dec16(R16::SP).r(1, 8),              // [DEC SP] [1  8] [- - - -]
         0x3C => p.inc8(R8::A).r(1, 4),                 // [INC A] [1  4] [Z 0 H -]
