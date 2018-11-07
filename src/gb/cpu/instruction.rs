@@ -241,7 +241,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xE5 => (0, 0),                                // TODO: [PUSH HL] [1  16] [- - - -]
         0xE6 => p.and8(Immediate8).r(2, 8),            // [AND d8] [2  8] [Z 0 1 0]
         0xE7 => (0, 0),                                // TODO: [RST 20H] [1  16] [- - - -]
-        0xE8 => (0, 0),                                // TODO: [ADD SP,r8] [2  16] [0 0 H C]
+        0xE8 => p.add_sp(Immediate8).r(2, 16),         // [ADD SP,r8] [2  16] [0 0 H C]
         0xE9 => (0, 0),                                // TODO: [JP (HL)] [1  4] [- - - -]
         0xEA => (0, 0),                                // TODO: [LD (a16),A] [3  16] [- - - -]
         0xEB => p.undefined(opcode).r(1, 0),           // [Undefined]

@@ -26,11 +26,11 @@ impl<'a> Processor<'a> {
         let a = self.0.A as u16;
         let b = rhs.read8(self.0, self.1) as u16;
         let c = a + b;
-        let hc = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
+        let hcarry = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
 
         self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.disable_flag(Flag::N);
-        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::H, hcarry);
         self.0.set_flag(Flag::C, c > 0xFF);
 
         self.0.A = c as u8;
@@ -41,13 +41,30 @@ impl<'a> Processor<'a> {
         let a = R16::HL.read16(self.0, self.1) as u32;
         let b = rhs.read16(self.0, self.1) as u32;
         let c = a + b;
-        let hc = ((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF;
+        let hcarry = ((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF;
 
         self.0.disable_flag(Flag::N);
-        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::H, hcarry);
         self.0.set_flag(Flag::C, c > 0xFFFF);
 
         R16::HL.write16(self.0, self.1, c as u16);
+        self
+    }
+
+    pub fn add_sp<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+        // This implementation might be wrong
+        let a = R16::SP.read16(self.0, self.1) as u32;
+        let b = rhs.read8(self.0, self.1) as u32;
+        let c = a + b;
+        let hcarry = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
+        let carry = ((a & 0xFF) + (b & 0xFF)) > 0xFF;
+
+        self.0.disable_flag(Flag::Z);
+        self.0.disable_flag(Flag::N);
+        self.0.set_flag(Flag::H, hcarry);
+        self.0.set_flag(Flag::C, carry);
+
+        R16::SP.write16(self.0, self.1, c as u16);
         self
     }
 
@@ -56,11 +73,11 @@ impl<'a> Processor<'a> {
         let b = rhs.read8(self.0, self.1) as u16;
         let carry = if self.0.get_flag(Flag::C) { 1 } else { 0 } as u16;
         let c = a + b + carry;
-        let hc = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
+        let hcarry = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
 
         self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.disable_flag(Flag::N);
-        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::H, hcarry);
         self.0.set_flag(Flag::C, c > 0xFF);
 
         self.0.A = c as u8;
@@ -88,11 +105,11 @@ impl<'a> Processor<'a> {
         let a = self.0.A as i16;
         let b = rhs.read8(self.0, self.1) as i16;
         let c = a - b;
-        let hc = ((a & 0x0F) - (b & 0x0F)) < 0;
+        let hcarry = ((a & 0x0F) - (b & 0x0F)) < 0;
 
         self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.enable_flag(Flag::N);
-        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::H, hcarry);
         self.0.set_flag(Flag::C, c < 0);
 
         self.0.A = c as u8;
@@ -104,11 +121,11 @@ impl<'a> Processor<'a> {
         let b = rhs.read8(self.0, self.1) as i16;
         let carry = if self.0.get_flag(Flag::C) { 1 } else { 0 } as i16;
         let c = a - b - carry;
-        let hc = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
+        let hcarry = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
 
         self.0.set_flag(Flag::Z, (c & 0xFF) == 0x00);
         self.0.enable_flag(Flag::N);
-        self.0.set_flag(Flag::H, hc);
+        self.0.set_flag(Flag::H, hcarry);
         self.0.set_flag(Flag::C, c < 0);
 
         self.0.A = c as u8;
