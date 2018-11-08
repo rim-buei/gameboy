@@ -237,6 +237,29 @@ impl Reader16 for Immediate16 {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub enum Condition {
+    T,  // True
+    NZ, // Zero flag is disabled
+    Z,  // Zero flag is enabled
+    NC, // Carry flag is disabled
+    C,  // Carry flag is enabled
+}
+
+impl Condition {
+    pub fn test(&self, reg: &mut Registers) -> bool {
+        use self::Condition::*;
+
+        match *self {
+            T => true,
+            NZ => !reg.get_flag(Flag::Z),
+            Z => reg.get_flag(Flag::Z),
+            NC => !reg.get_flag(Flag::C),
+            C => reg.get_flag(Flag::C),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
