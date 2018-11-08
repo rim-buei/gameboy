@@ -6,14 +6,23 @@ use super::register::{Address, Flag, Register16 as R16, Register8 as R8, Registe
 pub struct Processor<'a> {
     pub reg: &'a mut Registers,
     pub ram: &'a mut Ram,
+
+    extra_cycle: u8,
 }
 
 impl<'a> Processor<'a> {
     pub fn new(reg: &'a mut Registers, ram: &'a mut Ram) -> Self {
-        Processor { reg: reg, ram: ram }
+        Processor {
+            reg: reg,
+            ram: ram,
+
+            extra_cycle: 0,
+        }
     }
 
-    pub fn r(&mut self, opsize: u8, cycle: u8) -> (u8, u8) {
+    pub fn r(&mut self, opsize: u8, base_cycle: u8) -> (u8, u8) {
+        let cycle = base_cycle + self.extra_cycle;
+        self.extra_cycle = 0;
         (opsize, cycle)
     }
 
