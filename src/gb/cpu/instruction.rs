@@ -6,7 +6,7 @@ use super::register::{
 };
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    let mut p = Processor(reg, ram);
+    let mut p = Processor::new(reg, ram);
 
     match opcode {
         0x00 => (1, 4),                                  // [NOP] [1  4] [- - - -]
@@ -270,7 +270,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
 }
 
 pub fn exec_prefix_cb(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    let mut p = Processor(reg, ram);
+    let mut p = Processor::new(reg, ram);
 
     match opcode {
         0x00 => (0, 0), // TODO: [RLC B] [2  8] [Z 0 0 C]
