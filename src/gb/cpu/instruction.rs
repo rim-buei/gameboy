@@ -1,9 +1,7 @@
 use super::super::ram::Ram;
 
 use super::processor::Processor;
-use super::register::{
-    Address, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers,
-};
+use super::register::{Address, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers};
 
 pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
     let mut p = Processor::new(reg, ram);

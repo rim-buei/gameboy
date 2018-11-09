@@ -239,11 +239,12 @@ impl Reader16 for Immediate16 {
 
 #[derive(Debug, Copy, Clone)]
 pub enum Condition {
-    T,  // True
     NZ, // Zero flag is disabled
     Z,  // Zero flag is enabled
     NC, // Carry flag is disabled
     C,  // Carry flag is enabled
+    T,  // True
+    F,  // False
 }
 
 impl Condition {
@@ -251,11 +252,12 @@ impl Condition {
         use self::Condition::*;
 
         match *self {
-            T => true,
             NZ => !reg.get_flag(Flag::Z),
             Z => reg.get_flag(Flag::Z),
             NC => !reg.get_flag(Flag::C),
             C => reg.get_flag(Flag::C),
+            T => true,
+            F => false,
         }
     }
 }

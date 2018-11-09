@@ -1,7 +1,7 @@
 use super::super::ram::Ram;
 
 use super::io::{Reader16, Reader8, Writer16, Writer8};
-use super::register::{Address, Flag, Register16 as R16, Register8 as R8, Registers};
+use super::register::{Address, Condition, Flag, Register16 as R16, Register8 as R8, Registers};
 
 pub struct Processor<'a> {
     pub reg: &'a mut Registers,
@@ -226,6 +226,16 @@ impl<'a> Processor<'a> {
 
         self.inc16(R16::SP);
         self.inc16(R16::SP);
+        self
+    }
+
+    pub fn jp<R: Reader16>(&mut self, cond: Condition, r: R) -> &mut Self {
+        if cond.test(self.reg) {
+            let addr = r.read16(self.reg, self.ram);
+            self.reg.PC = addr;
+
+            self.extra_cycle += 4;
+        }
         self
     }
 
@@ -662,5 +672,19 @@ mod tests {
         p.pop16(R16::DE);
         assert_eq!(0x0002, p.reg.SP);
         assert_eq!(0xABCD, R16::DE.read16(&mut reg, &mut ram));
+    }
+
+    #[test]
+    fn test_processor_jp() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xAB, 0xCD]);
+
+        let mut p = Processor::new(&mut reg, &mut ram);
+        p.jp(Condition::F, Immediate16);
+        assert_eq!(0x0000, p.reg.PC);
+        assert_eq!((0, 0), p.r(0, 0));
+        p.jp(Condition::T, Immediate16);
+        assert_eq!(0xCDAB, p.reg.PC);
+        assert_eq!((0, 4), p.r(0, 0));
     }
 }
