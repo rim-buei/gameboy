@@ -87,7 +87,7 @@ impl<'a> Processor<'a> {
     pub fn adc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as u16;
         let b = rhs.read8(self.reg, self.ram) as u16;
-        let carry = if self.reg.get_flag(Flag::C) { 1 } else { 0 } as u16;
+        let carry = self.reg.get_flag(Flag::C) as u16;
         let c = a + b + carry;
         let hcarry = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
 
@@ -135,7 +135,7 @@ impl<'a> Processor<'a> {
     pub fn sbc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as i16;
         let b = rhs.read8(self.reg, self.ram) as i16;
-        let carry = if self.reg.get_flag(Flag::C) { 1 } else { 0 } as i16;
+        let carry = self.reg.get_flag(Flag::C) as i16;
         let c = a - b - carry;
         let hcarry = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
 
@@ -205,6 +205,54 @@ impl<'a> Processor<'a> {
         let temp = self.reg.A;
         self.sub8(rhs);
         self.reg.A = temp;
+        self
+    }
+
+    pub fn rl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r << 1) | self.reg.get_flag(Flag::C) as u8;
+        rw.write8(self.reg, self.ram, w);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x80) != 0);
+        self
+    }
+
+    pub fn rlc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r << 1) | (r >> 7);
+        rw.write8(self.reg, self.ram, w);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x80) != 0);
+        self
+    }
+
+    pub fn rr8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r >> 1) | ((self.reg.get_flag(Flag::C) as u8) << 7);
+        rw.write8(self.reg, self.ram, w);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x01) != 0);
+        self
+    }
+
+    pub fn rrc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r >> 1) | (r << 7);
+        rw.write8(self.reg, self.ram, w);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x01) != 0);
         self
     }
 
@@ -728,6 +776,51 @@ mod tests {
         p.cp8(R8::B);
         assert_eq!(0x00, reg.A);
         assert_eq!(FlagZNHC(false, true, true, true), FlagZNHC::new(reg));
+    }
+
+    #[test]
+    fn test_processor_rotate() {
+        struct TestCase {
+            a: u8,
+            carry: bool,
+            rl: u8,
+            rlc: u8,
+        };
+        for test in &[
+            TestCase {
+                a: 0b1000_1000,
+                carry: true,
+                rl: 0b0001_0001,
+                rlc: 0b0001_0001,
+            },
+            TestCase {
+                a: 0b1000_1000,
+                carry: false,
+                rl: 0b0001_0000,
+                rlc: 0b0001_0001,
+            },
+        ] {
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+                reg.set_flag(Flag::C, test.carry);
+
+                let mut p = Processor::new(&mut reg, &mut ram);
+                p.rl8(R8::A);
+                assert_eq!(test.rl, p.reg.A);
+            }
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+                reg.set_flag(Flag::C, test.carry);
+
+                let mut p = Processor::new(&mut reg, &mut ram);
+                p.rlc8(R8::A);
+                assert_eq!(test.rlc, p.reg.A);
+            }
+        }
     }
 
     #[test]
