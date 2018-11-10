@@ -263,19 +263,19 @@ impl<'a> Processor<'a> {
     }
 
     pub fn rlca(&mut self) -> &mut Self {
-        self.rl8(R8::A);
+        self.rlc8(R8::A);
         self.reg.disable_flag(Flag::Z);
         self
     }
 
     pub fn rra(&mut self) -> &mut Self {
-        self.rl8(R8::A);
+        self.rr8(R8::A);
         self.reg.disable_flag(Flag::Z);
         self
     }
 
     pub fn rrca(&mut self) -> &mut Self {
-        self.rl8(R8::A);
+        self.rrc8(R8::A);
         self.reg.disable_flag(Flag::Z);
         self
     }
