@@ -282,6 +282,12 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn rst(&mut self, addr: u16) -> &mut Self {
+        self.push16(R16::PC);
+        self.reg.PC = addr;
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
