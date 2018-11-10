@@ -239,6 +239,20 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn jr<R: Reader8>(&mut self, cond: Condition, r: R) -> &mut Self {
+        if cond.test(self.reg) {
+            let offset = r.read8(self.reg, self.ram) as i8;
+            if 0 < offset {
+                self.reg.PC = self.reg.PC.wrapping_add(offset as u16);
+            } else {
+                self.reg.PC = self.reg.PC.wrapping_sub(offset.abs() as u16);
+            }
+
+            self.extra_cycle += 4;
+        }
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
@@ -685,6 +699,18 @@ mod tests {
         assert_eq!((0, 0), p.r(0, 0));
         p.jp(Condition::T, Immediate16);
         assert_eq!(0xCDAB, p.reg.PC);
+        assert_eq!((0, 4), p.r(0, 0));
+    }
+
+    #[test]
+    fn test_processor_jr() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xFF /* -1 */]);
+        reg.PC = 0x0000;
+
+        let mut p = Processor::new(&mut reg, &mut ram);
+        p.jr(Condition::T, Immediate8);
+        assert_eq!(0xFFFF, p.reg.PC);
         assert_eq!((0, 4), p.r(0, 0));
     }
 }
