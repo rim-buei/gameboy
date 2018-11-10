@@ -288,6 +288,30 @@ impl<'a> Processor<'a> {
         self
     }
 
+    // Complement A register
+    pub fn cpl(&mut self) -> &mut Self {
+        self.reg.A ^= 0xFF;
+        self.reg.enable_flag(Flag::N);
+        self.reg.enable_flag(Flag::H);
+        self
+    }
+
+    // Complement carry flag
+    pub fn ccf(&mut self) -> &mut Self {
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, !self.reg.get_flag(Flag::C));
+        self
+    }
+
+    // Set carry flag
+    pub fn scf(&mut self) -> &mut Self {
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.enable_flag(Flag::C);
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
