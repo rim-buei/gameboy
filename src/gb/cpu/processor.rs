@@ -271,6 +271,17 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn ret(&mut self, cond: Condition) -> &mut Self {
+        if cond.test(self.reg) {
+            self.pop16(R16::PC);
+
+            self.extra_cycle += 12;
+        } else {
+            self.reg.PC = self.reg.PC.wrapping_add(1);
+        }
+        self
+    }
+
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
         println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
         self
@@ -732,7 +743,7 @@ mod tests {
     }
 
     #[test]
-    fn test_processor_call() {
+    fn test_processor_call_ret() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0xAB, 0xCD, /* stack: */ 0x00, 0x00]);
         reg.SP = 0x0005;
@@ -743,6 +754,10 @@ mod tests {
         assert_eq!(0xCDAB, p.reg.PC);
         assert_eq!(0x0003, p.reg.SP);
         assert_eq!(vec![0x00, 0xAB, 0xCD, 0x03, 0x00], p.ram.dump());
+        assert_eq!((0, 12), p.r(0, 0));
+        p.ret(Condition::T);
+        assert_eq!(0x0003, p.reg.PC);
+        assert_eq!(0x0005, p.reg.SP);
         assert_eq!((0, 12), p.r(0, 0));
     }
 }
