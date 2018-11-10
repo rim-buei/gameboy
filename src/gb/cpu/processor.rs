@@ -211,48 +211,52 @@ impl<'a> Processor<'a> {
     pub fn rl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.reg, self.ram);
         let w = (r << 1) | self.reg.get_flag(Flag::C) as u8;
-        rw.write8(self.reg, self.ram, w);
 
         self.reg.set_flag(Flag::Z, w == 0);
         self.reg.disable_flag(Flag::N);
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x80) != 0);
+
+        rw.write8(self.reg, self.ram, w);
         self
     }
 
     pub fn rlc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.reg, self.ram);
         let w = (r << 1) | (r >> 7);
-        rw.write8(self.reg, self.ram, w);
 
         self.reg.set_flag(Flag::Z, w == 0);
         self.reg.disable_flag(Flag::N);
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x80) != 0);
+
+        rw.write8(self.reg, self.ram, w);
         self
     }
 
     pub fn rr8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.reg, self.ram);
         let w = (r >> 1) | ((self.reg.get_flag(Flag::C) as u8) << 7);
-        rw.write8(self.reg, self.ram, w);
 
         self.reg.set_flag(Flag::Z, w == 0);
         self.reg.disable_flag(Flag::N);
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
+
+        rw.write8(self.reg, self.ram, w);
         self
     }
 
     pub fn rrc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.reg, self.ram);
         let w = (r >> 1) | (r << 7);
-        rw.write8(self.reg, self.ram, w);
 
         self.reg.set_flag(Flag::Z, w == 0);
         self.reg.disable_flag(Flag::N);
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
+
+        rw.write8(self.reg, self.ram, w);
         self
     }
 
