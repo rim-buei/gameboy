@@ -256,6 +256,30 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn rla(&mut self) -> &mut Self {
+        self.rl8(R8::A);
+        self.reg.disable_flag(Flag::Z);
+        self
+    }
+
+    pub fn rlca(&mut self) -> &mut Self {
+        self.rl8(R8::A);
+        self.reg.disable_flag(Flag::Z);
+        self
+    }
+
+    pub fn rra(&mut self) -> &mut Self {
+        self.rl8(R8::A);
+        self.reg.disable_flag(Flag::Z);
+        self
+    }
+
+    pub fn rrca(&mut self) -> &mut Self {
+        self.rl8(R8::A);
+        self.reg.disable_flag(Flag::Z);
+        self
+    }
+
     pub fn push16<R: Reader16>(&mut self, r: R) -> &mut Self {
         let sp = R16::SP.read16(self.reg, self.ram);
         let v = r.read16(self.reg, self.ram);
