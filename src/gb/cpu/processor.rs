@@ -284,6 +284,29 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn bit8<R: Reader8>(&mut self, bit: u8, r: R) -> &mut Self {
+        let v = r.read8(self.reg, self.ram);
+
+        self.reg.set_flag(Flag::Z, (v & (1 << bit)) == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.enable_flag(Flag::H);
+        self
+    }
+
+    pub fn set8<RW: Reader8 + Writer8>(&mut self, bit: u8, rw: RW) -> &mut Self {
+        let v = rw.read8(self.reg, self.ram) | (1 << bit);
+
+        rw.write8(self.reg, self.ram, v);
+        self
+    }
+
+    pub fn res8<RW: Reader8 + Writer8>(&mut self, bit: u8, rw: RW) -> &mut Self {
+        let v = rw.read8(self.reg, self.ram) & !(1 << bit);
+
+        rw.write8(self.reg, self.ram, v);
+        self
+    }
+
     pub fn push16<R: Reader16>(&mut self, r: R) -> &mut Self {
         let sp = R16::SP.read16(self.reg, self.ram);
         let v = r.read16(self.reg, self.ram);
@@ -849,6 +872,24 @@ mod tests {
                 assert_eq!(test.rlc, p.reg.A);
             }
         }
+    }
+
+    #[test]
+    fn test_processor_bit_set() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x00]);
+
+        let mut p = Processor::new(&mut reg, &mut ram);
+        p.bit8(7, R8::A);
+        assert_eq!(true, p.reg.get_flag(Flag::Z));
+        p.set8(7, R8::A);
+        assert_eq!(true, p.reg.get_flag(Flag::Z));
+        p.bit8(7, R8::A);
+        assert_eq!(false, p.reg.get_flag(Flag::Z));
+        p.res8(7, R8::A);
+        assert_eq!(false, p.reg.get_flag(Flag::Z));
+        p.bit8(7, R8::A);
+        assert_eq!(true, p.reg.get_flag(Flag::Z));
     }
 
     #[test]
