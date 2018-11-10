@@ -237,6 +237,16 @@ impl Reader16 for Immediate16 {
     }
 }
 
+// TODO: Should be moved to other module
+#[derive(Debug, Copy, Clone)]
+pub struct Data16(pub u16);
+
+impl Reader16 for Data16 {
+    fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
+        self.0
+    }
+}
+
 #[derive(Debug, Copy, Clone)]
 pub enum Condition {
     NZ, // Zero flag is disabled
