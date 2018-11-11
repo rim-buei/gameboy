@@ -284,6 +284,58 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn sla8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = r << 1;
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x80) != 0);
+
+        rw.write8(self.reg, self.ram, w);
+        self
+    }
+
+    pub fn sra8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r >> 1) | (r & 0x80);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x01) != 0);
+
+        rw.write8(self.reg, self.ram, w);
+        self
+    }
+
+    pub fn srl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = r >> 1;
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.set_flag(Flag::C, (r & 0x01) != 0);
+
+        rw.write8(self.reg, self.ram, w);
+        self
+    }
+
+    pub fn swap8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
+        let r = rw.read8(self.reg, self.ram);
+        let w = (r << 4) | (r >> 4);
+
+        self.reg.set_flag(Flag::Z, w == 0);
+        self.reg.disable_flag(Flag::N);
+        self.reg.disable_flag(Flag::H);
+        self.reg.disable_flag(Flag::C);
+
+        rw.write8(self.reg, self.ram, w);
+        self
+    }
+
     pub fn bit8<R: Reader8>(&mut self, bit: u8, r: R) -> &mut Self {
         let v = r.read8(self.reg, self.ram);
 
@@ -870,6 +922,50 @@ mod tests {
                 let mut p = Processor::new(&mut reg, &mut ram);
                 p.rlc8(R8::A);
                 assert_eq!(test.rlc, p.reg.A);
+            }
+        }
+    }
+
+    #[test]
+    fn test_processor_shift() {
+        struct TestCase {
+            a: u8,
+            sra: u8,
+            srl: u8,
+            swap: u8,
+        };
+        for test in &[TestCase {
+            a: 0b1000_0001,
+            sra: 0b1100_0000,
+            srl: 0b0100_0000,
+            swap: 0b0001_1000,
+        }] {
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+
+                let mut p = Processor::new(&mut reg, &mut ram);
+                p.sra8(R8::A);
+                assert_eq!(test.sra, p.reg.A);
+            }
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+
+                let mut p = Processor::new(&mut reg, &mut ram);
+                p.srl8(R8::A);
+                assert_eq!(test.srl, p.reg.A);
+            }
+            {
+                let mut reg = Registers::new();
+                let mut ram = Ram::new(vec![0x00]);
+                reg.A = test.a;
+
+                let mut p = Processor::new(&mut reg, &mut ram);
+                p.swap8(R8::A);
+                assert_eq!(test.swap, p.reg.A);
             }
         }
     }
