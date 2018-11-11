@@ -524,13 +524,44 @@ mod tests {
     }
 
     #[test]
-    fn test_processor_ld16() {
+    fn test_processor_ld8_r8_a16() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0x03, 0x00, 0xAA]);
+
+        let mut p = Processor::new(&mut reg, &mut ram);
+        p.ld8(R8::B, Address::Direct); // Address will be 0x003
+        assert_eq!(0xAA, p.reg.B);
+    }
+
+    #[test]
+    fn test_processor_ld16_r16_d16() {
         let mut reg = Registers::new();
         let mut ram = Ram::new(vec![0x00, 0xAB, 0xCD]);
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.ld16(R16::SP, Immediate16);
         assert_eq!(0xCDAB, p.reg.SP);
+    }
+
+    #[test]
+    fn test_processor_ld16_r16_a16() {
+        {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00, 0x03, 0x00, 0xAB, 0xCD]);
+
+            let mut p = Processor::new(&mut reg, &mut ram);
+            p.ld16(R16::SP, Address::Direct);
+            assert_eq!(0xCDAB, p.reg.SP);
+        }
+        {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00, 0x03, 0x00, 0x00, 0x00]);
+            reg.SP = 0xCDAB;
+
+            let mut p = Processor::new(&mut reg, &mut ram);
+            p.ld16(Address::Direct, R16::SP);
+            assert_eq!(vec![0x00, 0x03, 0x00, 0xAB, 0xCD], p.ram.dump());
+        }
     }
 
     #[test]
