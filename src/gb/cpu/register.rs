@@ -188,53 +188,53 @@ pub enum Address {
 
     HLI, // HL+
     HLD, // HL-
+
+    Direct, // Read from immediate value
+}
+
+impl Address {
+    fn get(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
+        use self::Address::*;
+
+        match *self {
+            BC => Register16::BC.read16(reg, ram),
+            DE => Register16::DE.read16(reg, ram),
+            HL => Register16::HL.read16(reg, ram),
+
+            HLI => Register16::HL.read16(reg, ram).wrapping_add(1),
+            HLD => Register16::HL.read16(reg, ram).wrapping_sub(1),
+
+            Direct => Immediate16.read16(reg, ram),
+        }
+    }
 }
 
 impl Reader8 for Address {
     fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
-        use self::Address::*;
-
-        let src = match *self {
-            BC => Register16::BC,
-            DE => Register16::DE,
-            HL => Register16::HL,
-
-            HLI => Register16::HL,
-            HLD => Register16::HL,
-        };
-
-        let addr = src.read16(reg, ram);
-        let addr = match *self {
-            HLI => addr.wrapping_add(1),
-            HLD => addr.wrapping_sub(1),
-            _ => addr,
-        };
-
+        let addr = self.get(reg, ram);
         ram.read(addr)
+    }
+}
+
+impl Reader16 for Address {
+    fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
+        let addr = self.get(reg, ram);
+        ram.read(addr) as u16 | (ram.read(addr.wrapping_add(1)) as u16) << 8
     }
 }
 
 impl Writer8 for Address {
     fn write8(&self, reg: &mut Registers, ram: &mut Ram, v: u8) {
-        use self::Address::*;
+        let addr = self.get(reg, ram);
+        ram.write(addr, v);
+    }
+}
 
-        let dst = match *self {
-            BC => Register16::BC,
-            DE => Register16::DE,
-            HL => Register16::HL,
-
-            HLI => Register16::HL,
-            HLD => Register16::HL,
-        };
-
-        let addr = dst.read16(reg, ram);
-        let addr = match *self {
-            HLI => addr.wrapping_add(1),
-            HLD => addr.wrapping_sub(1),
-            _ => addr,
-        };
-
-        ram.write(addr, v)
+impl Writer16 for Address {
+    fn write16(&self, reg: &mut Registers, ram: &mut Ram, v: u16) {
+        let addr = self.get(reg, ram);
+        ram.write(addr, (v & 0xFF) as u8);
+        ram.write(addr.wrapping_add(1), (v >> 8) as u8);
     }
 }
 
