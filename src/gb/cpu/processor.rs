@@ -497,18 +497,20 @@ mod tests {
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.ld8(R8::B, R8::A);
-        assert_eq!(0xAA, reg.B);
+        assert_eq!(0xAA, p.reg.B);
     }
 
     #[test]
     fn test_processor_ld8_r8_hl() {
         let mut reg = Registers::new();
-        let mut ram = Ram::new(vec![0x00, 0xAA]);
+        let mut ram = Ram::new(vec![0xAA, 0xBB]);
         reg.L = 0x01;
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.ld8(R8::B, Address::HL);
-        assert_eq!(0xAA, reg.B);
+        assert_eq!(0xBB, p.reg.B);
+        p.ld8(R8::B, Address::HLD);
+        assert_eq!(0xAA, p.reg.B);
     }
 
     #[test]
@@ -518,7 +520,7 @@ mod tests {
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.ld8(R8::B, Immediate8);
-        assert_eq!(0xAA, reg.B);
+        assert_eq!(0xAA, p.reg.B);
     }
 
     #[test]
@@ -528,7 +530,7 @@ mod tests {
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.ld16(R16::SP, Immediate16);
-        assert_eq!(0xCDAB, reg.SP);
+        assert_eq!(0xCDAB, p.reg.SP);
     }
 
     #[test]
@@ -572,7 +574,7 @@ mod tests {
 
             let mut p = Processor::new(&mut reg, &mut ram);
             p.add8(R8::B);
-            assert_eq!(test.c, reg.A);
+            assert_eq!(test.c, p.reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
@@ -671,7 +673,7 @@ mod tests {
 
             let mut p = Processor::new(&mut reg, &mut ram);
             p.adc8(R8::B);
-            assert_eq!(test.c, reg.A);
+            assert_eq!(test.c, p.reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
@@ -717,7 +719,7 @@ mod tests {
 
             let mut p = Processor::new(&mut reg, &mut ram);
             p.sub8(R8::B);
-            assert_eq!(test.c, reg.A);
+            assert_eq!(test.c, p.reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
@@ -770,7 +772,7 @@ mod tests {
 
             let mut p = Processor::new(&mut reg, &mut ram);
             p.sbc8(R8::B);
-            assert_eq!(test.c, reg.A);
+            assert_eq!(test.c, p.reg.A);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
@@ -840,7 +842,7 @@ mod tests {
 
                 let mut p = Processor::new(&mut reg, &mut ram);
                 p.and8(R8::B);
-                assert_eq!(test.and, reg.A);
+                assert_eq!(test.and, p.reg.A);
                 assert_eq!(test.and_flags, FlagZNHC::new(reg));
             }
             {
@@ -851,7 +853,7 @@ mod tests {
 
                 let mut p = Processor::new(&mut reg, &mut ram);
                 p.or8(R8::B);
-                assert_eq!(test.or, reg.A);
+                assert_eq!(test.or, p.reg.A);
                 assert_eq!(test.or_flags, FlagZNHC::new(reg));
             }
             {
@@ -862,7 +864,7 @@ mod tests {
 
                 let mut p = Processor::new(&mut reg, &mut ram);
                 p.xor8(R8::B);
-                assert_eq!(test.xor, reg.A);
+                assert_eq!(test.xor, p.reg.A);
                 assert_eq!(test.xor_flags, FlagZNHC::new(reg));
             }
         }
@@ -877,7 +879,7 @@ mod tests {
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.cp8(R8::B);
-        assert_eq!(0x00, reg.A);
+        assert_eq!(0x00, p.reg.A);
         assert_eq!(FlagZNHC(false, true, true, true), FlagZNHC::new(reg));
     }
 

@@ -185,6 +185,9 @@ pub enum Address {
     BC,
     DE,
     HL,
+
+    HLI, // HL+
+    HLD, // HL-
 }
 
 impl Reader8 for Address {
@@ -195,9 +198,18 @@ impl Reader8 for Address {
             BC => Register16::BC,
             DE => Register16::DE,
             HL => Register16::HL,
+
+            HLI => Register16::HL,
+            HLD => Register16::HL,
         };
 
         let addr = src.read16(reg, ram);
+        let addr = match *self {
+            HLI => addr.wrapping_add(1),
+            HLD => addr.wrapping_sub(1),
+            _ => addr,
+        };
+
         ram.read(addr)
     }
 }
@@ -210,9 +222,18 @@ impl Writer8 for Address {
             BC => Register16::BC,
             DE => Register16::DE,
             HL => Register16::HL,
+
+            HLI => Register16::HL,
+            HLD => Register16::HL,
         };
 
         let addr = dst.read16(reg, ram);
+        let addr = match *self {
+            HLI => addr.wrapping_add(1),
+            HLD => addr.wrapping_sub(1),
+            _ => addr,
+        };
+
         ram.write(addr, v)
     }
 }
@@ -253,8 +274,9 @@ pub enum Condition {
     Z,  // Zero flag is enabled
     NC, // Carry flag is disabled
     C,  // Carry flag is enabled
-    T,  // True
-    F,  // False
+
+    T, // True
+    F, // False
 }
 
 impl Condition {
