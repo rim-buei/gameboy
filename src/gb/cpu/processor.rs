@@ -1,7 +1,9 @@
 use super::super::ram::Ram;
 
 use super::io::{Reader16, Reader8, Writer16, Writer8};
-use super::register::{Address, Condition, Data16, Flag, Register16 as R16, Register8 as R8, Registers};
+use super::register::{
+    Address, Condition, Data16, Flag, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers,
+};
 
 pub struct Processor<'a> {
     pub reg: &'a mut Registers,
@@ -67,20 +69,35 @@ impl<'a> Processor<'a> {
         self
     }
 
-    pub fn add_sp<R: Reader8>(&mut self, rhs: R) -> &mut Self {
+    pub fn add_r16_e8<R16: Reader16, R8: Reader8>(&mut self, lhs: R16, rhs: R8) -> u16 {
         // This implementation might be wrong
-        let a = R16::SP.read16(self.reg, self.ram) as u32;
-        let b = rhs.read8(self.reg, self.ram) as u32;
-        let c = a + b;
-        let hcarry = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
-        let carry = ((a & 0xFF) + (b & 0xFF)) > 0xFF;
+        let a = lhs.read16(self.reg, self.ram) as u16;
+        let b = rhs.read8(self.reg, self.ram) as i8;
+        let c = if 0 < b {
+            a.wrapping_add(b as u16)
+        } else {
+            a.wrapping_sub(b.abs() as u16)
+        };
+        let hcarry = (c & 0x0F) < (a & 0x0F);
+        let carry = (c & 0xFF) < (a & 0xFF);
 
         self.reg.disable_flag(Flag::Z);
         self.reg.disable_flag(Flag::N);
         self.reg.set_flag(Flag::H, hcarry);
         self.reg.set_flag(Flag::C, carry);
 
-        R16::SP.write16(self.reg, self.ram, c as u16);
+        c
+    }
+
+    pub fn add_sp_e8(&mut self) -> &mut Self {
+        let addr = self.add_r16_e8(R16::SP, Immediate8);
+        R16::SP.write16(self.reg, self.ram, addr);
+        self
+    }
+
+    pub fn ld_hl_sp_e8(&mut self) -> &mut Self {
+        let addr = self.add_r16_e8(R16::SP, Immediate8);
+        R16::HL.write16(self.reg, self.ram, addr);
         self
     }
 
@@ -471,8 +488,6 @@ impl<'a> Processor<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::register::{Immediate16, Immediate8};
-
     use super::*;
 
     #[derive(Debug, PartialEq)]
@@ -652,6 +667,52 @@ mod tests {
             let mut p = Processor::new(&mut reg, &mut ram);
             p.add16(R16::BC);
             assert_eq!(test.c, R16::HL.read16(&mut reg, &mut ram));
+            assert_eq!(test.flags, FlagZNHC::new(reg));
+        }
+    }
+
+    #[test]
+    fn test_processor_add_r16_e8() {
+        struct TestCase {
+            a: u16,
+            b: i8,
+            c: u16,
+            flags: FlagZNHC,
+        };
+        for test in &[
+            TestCase {
+                a: 0x00FF,
+                b: 1,
+                c: 0x0100,
+                flags: FlagZNHC(false, false, true, true),
+            },
+            TestCase {
+                a: 0x0100,
+                b: -1,
+                c: 0x00FF,
+                flags: FlagZNHC(false, false, false, false),
+            },
+            TestCase {
+                a: 0x0010,
+                b: -1,
+                c: 0x000F,
+                flags: FlagZNHC(false, false, false, true),
+            },
+            TestCase {
+                a: 0x0000,
+                b: -1,
+                c: 0xFFFF,
+                flags: FlagZNHC(false, false, false, false),
+            },
+        ] {
+            let mut reg = Registers::new();
+            let mut ram = Ram::new(vec![0x00]);
+            R16::BC.write16(&mut reg, &mut ram, test.a);
+            reg.D = test.b as u8;
+
+            let mut p = Processor::new(&mut reg, &mut ram);
+            let c = p.add_r16_e8(R16::BC, R8::D);
+            assert_eq!(test.c, c);
             assert_eq!(test.flags, FlagZNHC::new(reg));
         }
     }
