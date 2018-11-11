@@ -219,7 +219,7 @@ impl Reader8 for Address {
 impl Reader16 for Address {
     fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
         let addr = self.get(reg, ram);
-        ram.read(addr) as u16 | (ram.read(addr.wrapping_add(1)) as u16) << 8
+        ram.read(addr) as u16 | ((ram.read(addr.wrapping_add(1)) as u16) << 8)
     }
 }
 
@@ -254,7 +254,7 @@ pub struct Immediate16;
 
 impl Reader16 for Immediate16 {
     fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
-        ram.read(reg.PC.wrapping_add(1)) as u16 | (ram.read(reg.PC.wrapping_add(2)) as u16) << 8
+        ram.read(reg.PC.wrapping_add(1)) as u16 | ((ram.read(reg.PC.wrapping_add(2)) as u16) << 8)
     }
 }
 
