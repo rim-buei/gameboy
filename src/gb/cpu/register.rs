@@ -189,7 +189,9 @@ pub enum Address {
     HLI, // HL+
     HLD, // HL-
 
-    Direct, // Read from immediate value
+    Direct, // Read from 16-bit immediate value
+    FF00,   // Read from $FF00 + 8-bit immediate value
+    FF00C,  // Read from $FF00 + C register
 }
 
 impl Address {
@@ -205,6 +207,8 @@ impl Address {
             HLD => Register16::HL.read16(reg, ram).wrapping_sub(1),
 
             Direct => Immediate16.read16(reg, ram),
+            FF00 => 0xFF00 + Immediate8.read8(reg, ram) as u16,
+            FF00C => 0xFF00 + reg.C as u16,
         }
     }
 }
@@ -308,5 +312,15 @@ mod tests {
         assert_eq!(0b11000000, reg.F);
         reg.disable_flag(Flag::Z);
         assert_eq!(0b01000000, reg.F);
+    }
+
+    #[test]
+    fn test_address_get() {
+        let mut reg = Registers::new();
+        let mut ram = Ram::new(vec![0x00, 0xAA]);
+        reg.C = 0xBB;
+
+        assert_eq!(0xFFAA, Address::FF00.get(&mut reg, &mut ram));
+        assert_eq!(0xFFBB, Address::FF00C.get(&mut reg, &mut ram))
     }
 }
