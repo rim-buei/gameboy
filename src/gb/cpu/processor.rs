@@ -225,6 +225,43 @@ impl<'a> Processor<'a> {
         self
     }
 
+    pub fn daa(&mut self) -> &mut Self {
+        let a = self.reg.A;
+
+        let mut b = 0x00;
+        if self.reg.get_flag(Flag::Z) {
+            if self.reg.get_flag(Flag::H) {
+                b |= 0x06;
+            }
+            if self.reg.get_flag(Flag::C) {
+                b |= 0x60;
+            }
+        } else {
+            if self.reg.get_flag(Flag::H) || (a & 0x0F) > 0x09 {
+                b |= 0x06;
+            }
+            if self.reg.get_flag(Flag::C) || (a & 0xFF) > 0x99 {
+                b |= 0x60;
+            }
+        }
+
+        let c = if self.reg.get_flag(Flag::N) {
+            a.wrapping_sub(b)
+        } else {
+            a.wrapping_add(b)
+        };
+
+        self.reg.set_flag(Flag::Z, c == 0);
+        self.reg.disable_flag(Flag::H);
+
+        if ((b as u16) << 2) & 0x100 != 0 {
+            self.reg.enable_flag(Flag::C);
+        }
+
+        self.reg.A = c;
+        self
+    }
+
     pub fn rl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.reg, self.ram);
         let w = (r << 1) | self.reg.get_flag(Flag::C) as u8;

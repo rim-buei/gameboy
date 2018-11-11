@@ -46,7 +46,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x24 => p.inc8(R8::H).r(1, 4),                       // [INC H] [1  4] [Z 0 H -]
         0x25 => p.dec8(R8::H).r(1, 4),                       // [DEC H] [1  4] [Z 1 H -]
         0x26 => p.ld8(R8::H, Immediate8).r(2, 8),            // [LD H,d8] [2  8] [- - - -]
-        0x27 => (0, 0),                                      // TODO: [DAA] [1  4] [Z - 0 C]
+        0x27 => p.daa().r(1, 4),                             // [DAA] [1  4] [Z - 0 C]
         0x28 => p.jr(Condition::Z, Immediate8).r(2, 8),      // [JR Z,r8] [2  12/8] [- - - -]
         0x29 => p.add16(R16::HL).r(1, 8),                    // [ADD HL,HL] [1  8] [- 0 H C]
         0x2A => p.ld8(R8::A, Address::HLI).r(1, 8),          // [LD A,(HL+)] [1  8] [- - - -]
