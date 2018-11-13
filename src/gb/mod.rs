@@ -1,6 +1,7 @@
+mod cartridge;
 mod cpu;
+mod memory;
 mod ram;
-mod rom;
 
 pub struct Context {
     registers: cpu::register::Registers,

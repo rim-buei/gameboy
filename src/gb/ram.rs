@@ -1,3 +1,4 @@
+// TODO: This should be merged into Memory
 pub struct Ram {
     blob: Vec<u8>,
 }
