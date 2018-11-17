@@ -484,9 +484,24 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
         self
     }
 
+    pub fn reti(&mut self) -> &mut Self {
+        self.ret(Condition::T);
+        self.ei()
+    }
+
     pub fn rst(&mut self, addr: u16) -> &mut Self {
         self.push16(R16::PC);
         self.state.PC = addr;
+        self
+    }
+
+    pub fn ei(&mut self) -> &mut Self {
+        self.state.IME = true;
+        self
+    }
+
+    pub fn di(&mut self) -> &mut Self {
+        self.state.IME = false;
         self
     }
 
