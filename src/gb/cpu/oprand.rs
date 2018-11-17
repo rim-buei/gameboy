@@ -106,9 +106,6 @@ pub enum Address {
     DE,
     HL,
 
-    HLI, // HL+
-    HLD, // HL-
-
     Direct, // Read from 16-bit immediate value
     FF00,   // Read from $FF00 + 8-bit immediate value
     FF00C,  // Read from $FF00 + C register
@@ -122,9 +119,6 @@ impl Address {
             BC => Register16::BC.read16(state, bus),
             DE => Register16::DE.read16(state, bus),
             HL => Register16::HL.read16(state, bus),
-
-            HLI => Register16::HL.read16(state, bus).wrapping_add(1),
-            HLD => Register16::HL.read16(state, bus).wrapping_sub(1),
 
             Direct => Immediate16.read16(state, bus),
             FF00 => 0xFF00 + Immediate8.read8(state, bus) as u16,

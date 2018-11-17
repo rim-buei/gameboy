@@ -32,6 +32,18 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
         self
     }
 
+    pub fn ld8_hli<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
+        let v = rhs.read8(self.state, self.bus);
+        lhs.write8(self.state, self.bus, v);
+        self.inc16(R16::HL)
+    }
+
+    pub fn ld8_hld<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
+        let v = rhs.read8(self.state, self.bus);
+        lhs.write8(self.state, self.bus, v);
+        self.dec16(R16::HL)
+    }
+
     pub fn ld16<R: Reader16, W: Writer16>(&mut self, lhs: W, rhs: R) -> &mut Self {
         let v = rhs.read16(self.state, self.bus);
         lhs.write16(self.state, self.bus, v);
@@ -567,7 +579,7 @@ mod tests {
     }
 
     #[test]
-    fn test_processor_ld8_r8_hl() {
+    fn test_processor_ld8_hl() {
         let mut state = State::new();
         let mut ram = Ram::new(vec![0xAA, 0xBB]);
         state.L = 0x01;
@@ -575,8 +587,13 @@ mod tests {
         let mut p = Processor::new(&mut state, &mut ram);
         p.ld8(R8::B, Address::HL);
         assert_eq!(0xBB, p.state.B);
-        p.ld8(R8::B, Address::HLD);
+
+        p.ld8_hld(R8::B, Address::HL);
+        assert_eq!(0xBB, p.state.B);
+        assert_eq!(0x00, p.state.L);
+        p.ld8_hld(R8::B, Address::HL);
         assert_eq!(0xAA, p.state.B);
+        assert_eq!(0xFF, p.state.L);
     }
 
     #[test]

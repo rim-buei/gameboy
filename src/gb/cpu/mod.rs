@@ -41,6 +41,7 @@ impl Cpu {
 impl fmt::Debug for Cpu {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let pc = self.state.PC;
-        write!(f, "PC: 0x{:04X}", pc)
+        let hl = ((self.state.H as u16) << 8) + (self.state.L as u16);
+        write!(f, "PC: 0x{:04X}, HL 0x{:04X}", pc, hl)
     }
 }
