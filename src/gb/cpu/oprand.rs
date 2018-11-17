@@ -63,12 +63,12 @@ impl Reader16 for Register16 {
         use self::Register16::*;
 
         match *self {
-            Register16::AF => ((state.A as u16) << 8) + (state.F as u16),
-            Register16::BC => ((state.B as u16) << 8) + (state.C as u16),
-            Register16::DE => ((state.D as u16) << 8) + (state.E as u16),
-            Register16::HL => ((state.H as u16) << 8) + (state.L as u16),
-            Register16::SP => state.SP,
-            Register16::PC => state.PC,
+            AF => ((state.A as u16) << 8) + (state.F as u16),
+            BC => ((state.B as u16) << 8) + (state.C as u16),
+            DE => ((state.D as u16) << 8) + (state.E as u16),
+            HL => ((state.H as u16) << 8) + (state.L as u16),
+            SP => state.SP,
+            PC => state.PC,
         }
     }
 }
@@ -78,24 +78,24 @@ impl Writer16 for Register16 {
         use self::Register16::*;
 
         match *self {
-            Register16::AF => {
+            AF => {
                 state.A = (v >> 8) as u8;
                 state.F = (v & 0xFF) as u8;
             }
-            Register16::BC => {
+            BC => {
                 state.B = (v >> 8) as u8;
                 state.C = (v & 0xFF) as u8;
             }
-            Register16::DE => {
+            DE => {
                 state.D = (v >> 8) as u8;
                 state.E = (v & 0xFF) as u8;
             }
-            Register16::HL => {
+            HL => {
                 state.H = (v >> 8) as u8;
                 state.L = (v & 0xFF) as u8;
             }
-            Register16::PC => state.PC = v,
-            Register16::SP => state.SP = v,
+            PC => state.PC = v,
+            SP => state.SP = v,
         }
     }
 }
