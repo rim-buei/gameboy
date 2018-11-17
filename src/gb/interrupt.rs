@@ -16,16 +16,16 @@ const IF_REG_ADDR: u16 = 0xFF0F;
 
 pub fn request<B: Bus>(bus: &mut B, int: Interrupt) {
     if int == Interrupt::None {
-        panic!("None interrupt can not be requested")
+        panic!("this interrupt cannot be requested")
     }
 
     let if_reg = bus.read8(IF_REG_ADDR);
     bus.write8(IF_REG_ADDR, if_reg | int as u8);
 }
 
-pub fn discard<B: Bus>(bus: &mut B, int: Interrupt) {
+fn discard<B: Bus>(bus: &mut B, int: Interrupt) {
     if int == Interrupt::None {
-        panic!("None interrupt can not be discarded")
+        panic!("this interrupt cannot be discarded")
     }
 
     let if_reg = bus.read8(IF_REG_ADDR);
@@ -40,14 +40,19 @@ pub fn receive<B: Bus>(bus: &mut B) -> Interrupt {
     let v = ie_reg & if_reg;
 
     if (v & VBlank as u8) != 0 {
+        discard(bus, VBlank);
         VBlank
     } else if (v & LCDStat as u8) != 0 {
+        discard(bus, LCDStat);
         LCDStat
     } else if (v & Timer as u8) != 0 {
+        discard(bus, Timer);
         Timer
     } else if (v & Serial as u8) != 0 {
+        discard(bus, Serial);
         Serial
     } else if (v & Joypad as u8) != 0 {
+        discard(bus, Joypad);
         Joypad
     } else {
         None
@@ -71,8 +76,8 @@ mod tests {
 
         mmu.write8(IE_REG_ADDR, 0xFF);
         assert_eq!(Interrupt::Timer, receive(&mut mmu));
+        // The interrupt will be automatically discarded
 
-        discard(&mut mmu, Interrupt::Timer);
         assert_eq!(Interrupt::None, receive(&mut mmu));
     }
 
