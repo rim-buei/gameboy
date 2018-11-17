@@ -25,6 +25,8 @@ pub enum Flag {
     N, // Subtract
     H, // Half Carry
     C, // Carry
+
+    IME, // Interrupt Master Enable
 }
 
 impl State {
@@ -52,6 +54,8 @@ impl State {
             Flag::N => self.F |= 1 << 6,
             Flag::H => self.F |= 1 << 5,
             Flag::C => self.F |= 1 << 4,
+
+            Flag::IME => self.IME = true,
         }
         self
     }
@@ -62,6 +66,8 @@ impl State {
             Flag::N => self.F &= !(1 << 6),
             Flag::H => self.F &= !(1 << 5),
             Flag::C => self.F &= !(1 << 4),
+
+            Flag::IME => self.IME = false,
         }
         self
     }
@@ -72,6 +78,8 @@ impl State {
             Flag::N => (self.F & (1 << 6)) != 0,
             Flag::H => (self.F & (1 << 5)) != 0,
             Flag::C => (self.F & (1 << 4)) != 0,
+
+            Flag::IME => self.IME,
         }
     }
 
