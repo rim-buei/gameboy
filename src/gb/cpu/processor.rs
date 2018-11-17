@@ -1,22 +1,22 @@
-use super::super::ram::Ram;
+use super::super::bus::Bus;
 
 use super::io::{Reader16, Reader8, Writer16, Writer8};
 use super::register::{
     Address, Condition, Data16, Flag, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers,
 };
 
-pub struct Processor<'a> {
+pub struct Processor<'a, B: Bus + 'a> {
     pub reg: &'a mut Registers,
-    pub ram: &'a mut Ram,
+    pub bus: &'a mut B,
 
     extra_cycle: u8,
 }
 
-impl<'a> Processor<'a> {
-    pub fn new(reg: &'a mut Registers, ram: &'a mut Ram) -> Self {
+impl<'a, B: Bus + 'a> Processor<'a, B> {
+    pub fn new(reg: &'a mut Registers, bus: &'a mut B) -> Self {
         Processor {
             reg: reg,
-            ram: ram,
+            bus: bus,
 
             extra_cycle: 0,
         }
@@ -29,20 +29,20 @@ impl<'a> Processor<'a> {
     }
 
     pub fn ld8<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
-        let v = rhs.read8(self.reg, self.ram);
-        lhs.write8(self.reg, self.ram, v);
+        let v = rhs.read8(self.reg, self.bus);
+        lhs.write8(self.reg, self.bus, v);
         self
     }
 
     pub fn ld16<R: Reader16, W: Writer16>(&mut self, lhs: W, rhs: R) -> &mut Self {
-        let v = rhs.read16(self.reg, self.ram);
-        lhs.write16(self.reg, self.ram, v);
+        let v = rhs.read16(self.reg, self.bus);
+        lhs.write16(self.reg, self.bus, v);
         self
     }
 
     pub fn add8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as u16;
-        let b = rhs.read8(self.reg, self.ram) as u16;
+        let b = rhs.read8(self.reg, self.bus) as u16;
         let c = a + b;
         let hcarry = ((a & 0x0F) + (b & 0x0F)) > 0x0F;
 
@@ -56,8 +56,8 @@ impl<'a> Processor<'a> {
     }
 
     pub fn add16<R: Reader16>(&mut self, rhs: R) -> &mut Self {
-        let a = R16::HL.read16(self.reg, self.ram) as u32;
-        let b = rhs.read16(self.reg, self.ram) as u32;
+        let a = R16::HL.read16(self.reg, self.bus) as u32;
+        let b = rhs.read16(self.reg, self.bus) as u32;
         let c = a + b;
         let hcarry = ((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF;
 
@@ -65,14 +65,14 @@ impl<'a> Processor<'a> {
         self.reg.set_flag(Flag::H, hcarry);
         self.reg.set_flag(Flag::C, c > 0xFFFF);
 
-        R16::HL.write16(self.reg, self.ram, c as u16);
+        R16::HL.write16(self.reg, self.bus, c as u16);
         self
     }
 
     pub fn add_r16_e8<R16: Reader16, R8: Reader8>(&mut self, lhs: R16, rhs: R8) -> u16 {
         // This implementation might be wrong
-        let a = lhs.read16(self.reg, self.ram) as u16;
-        let b = rhs.read8(self.reg, self.ram) as i8;
+        let a = lhs.read16(self.reg, self.bus) as u16;
+        let b = rhs.read8(self.reg, self.bus) as i8;
         let c = if 0 < b {
             a.wrapping_add(b as u16)
         } else {
@@ -91,19 +91,19 @@ impl<'a> Processor<'a> {
 
     pub fn add_sp_e8(&mut self) -> &mut Self {
         let addr = self.add_r16_e8(R16::SP, Immediate8);
-        R16::SP.write16(self.reg, self.ram, addr);
+        R16::SP.write16(self.reg, self.bus, addr);
         self
     }
 
     pub fn ld_hl_sp_e8(&mut self) -> &mut Self {
         let addr = self.add_r16_e8(R16::SP, Immediate8);
-        R16::HL.write16(self.reg, self.ram, addr);
+        R16::HL.write16(self.reg, self.bus, addr);
         self
     }
 
     pub fn adc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as u16;
-        let b = rhs.read8(self.reg, self.ram) as u16;
+        let b = rhs.read8(self.reg, self.bus) as u16;
         let carry = self.reg.get_flag(Flag::C) as u16;
         let c = a + b + carry;
         let hcarry = ((a & 0x0F) + (b & 0x0F) + carry) > 0x0F;
@@ -118,25 +118,25 @@ impl<'a> Processor<'a> {
     }
 
     pub fn inc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let v = rw.read8(self.reg, self.ram).wrapping_add(1);
+        let v = rw.read8(self.reg, self.bus).wrapping_add(1);
 
         self.reg.set_flag(Flag::Z, v == 0x00);
         self.reg.disable_flag(Flag::N);
         self.reg.set_flag(Flag::H, (v & 0x0F) == 0x00);
 
-        rw.write8(self.reg, self.ram, v);
+        rw.write8(self.reg, self.bus, v);
         self
     }
 
     pub fn inc16<RW: Reader16 + Writer16>(&mut self, rw: RW) -> &mut Self {
-        let v = rw.read16(self.reg, self.ram).wrapping_add(1);
-        rw.write16(self.reg, self.ram, v);
+        let v = rw.read16(self.reg, self.bus).wrapping_add(1);
+        rw.write16(self.reg, self.bus, v);
         self
     }
 
     pub fn sub8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as i16;
-        let b = rhs.read8(self.reg, self.ram) as i16;
+        let b = rhs.read8(self.reg, self.bus) as i16;
         let c = a - b;
         let hcarry = ((a & 0x0F) - (b & 0x0F)) < 0;
 
@@ -151,7 +151,7 @@ impl<'a> Processor<'a> {
 
     pub fn sbc8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
         let a = self.reg.A as i16;
-        let b = rhs.read8(self.reg, self.ram) as i16;
+        let b = rhs.read8(self.reg, self.bus) as i16;
         let carry = self.reg.get_flag(Flag::C) as i16;
         let c = a - b - carry;
         let hcarry = ((a & 0x0F) - (b & 0x0F) - carry) < 0;
@@ -166,24 +166,24 @@ impl<'a> Processor<'a> {
     }
 
     pub fn dec8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let v = rw.read8(self.reg, self.ram).wrapping_sub(1);
+        let v = rw.read8(self.reg, self.bus).wrapping_sub(1);
 
         self.reg.set_flag(Flag::Z, v == 0x00);
         self.reg.enable_flag(Flag::N);
         self.reg.set_flag(Flag::H, (v & 0x0F) == 0x0F);
 
-        rw.write8(self.reg, self.ram, v);
+        rw.write8(self.reg, self.bus, v);
         self
     }
 
     pub fn dec16<RW: Reader16 + Writer16>(&mut self, rw: RW) -> &mut Self {
-        let v = rw.read16(self.reg, self.ram).wrapping_sub(1);
-        rw.write16(self.reg, self.ram, v);
+        let v = rw.read16(self.reg, self.bus).wrapping_sub(1);
+        rw.write16(self.reg, self.bus, v);
         self
     }
 
     pub fn and8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
-        let c = self.reg.A & rhs.read8(self.reg, self.ram);
+        let c = self.reg.A & rhs.read8(self.reg, self.bus);
 
         self.reg.set_flag(Flag::Z, c == 0x00);
         self.reg.disable_flag(Flag::N);
@@ -195,7 +195,7 @@ impl<'a> Processor<'a> {
     }
 
     pub fn or8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
-        let c = self.reg.A | rhs.read8(self.reg, self.ram);
+        let c = self.reg.A | rhs.read8(self.reg, self.bus);
 
         self.reg.set_flag(Flag::Z, c == 0x00);
         self.reg.disable_flag(Flag::N);
@@ -207,7 +207,7 @@ impl<'a> Processor<'a> {
     }
 
     pub fn xor8<R: Reader8>(&mut self, rhs: R) -> &mut Self {
-        let c = self.reg.A ^ rhs.read8(self.reg, self.ram);
+        let c = self.reg.A ^ rhs.read8(self.reg, self.bus);
 
         self.reg.set_flag(Flag::Z, c == 0x00);
         self.reg.disable_flag(Flag::N);
@@ -263,7 +263,7 @@ impl<'a> Processor<'a> {
     }
 
     pub fn rl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r << 1) | self.reg.get_flag(Flag::C) as u8;
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -271,12 +271,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x80) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn rlc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r << 1) | (r >> 7);
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -284,12 +284,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x80) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn rr8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r >> 1) | ((self.reg.get_flag(Flag::C) as u8) << 7);
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -297,12 +297,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn rrc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r >> 1) | (r << 7);
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -310,7 +310,7 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
@@ -339,7 +339,7 @@ impl<'a> Processor<'a> {
     }
 
     pub fn sla8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = r << 1;
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -347,12 +347,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x80) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn sra8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r >> 1) | (r & 0x80);
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -360,12 +360,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn srl8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = r >> 1;
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -373,12 +373,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.set_flag(Flag::C, (r & 0x01) != 0);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn swap8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
-        let r = rw.read8(self.reg, self.ram);
+        let r = rw.read8(self.reg, self.bus);
         let w = (r << 4) | (r >> 4);
 
         self.reg.set_flag(Flag::Z, w == 0);
@@ -386,12 +386,12 @@ impl<'a> Processor<'a> {
         self.reg.disable_flag(Flag::H);
         self.reg.disable_flag(Flag::C);
 
-        rw.write8(self.reg, self.ram, w);
+        rw.write8(self.reg, self.bus, w);
         self
     }
 
     pub fn bit8<R: Reader8>(&mut self, bit: u8, r: R) -> &mut Self {
-        let v = r.read8(self.reg, self.ram);
+        let v = r.read8(self.reg, self.bus);
 
         self.reg.set_flag(Flag::Z, (v & (1 << bit)) == 0);
         self.reg.disable_flag(Flag::N);
@@ -400,24 +400,24 @@ impl<'a> Processor<'a> {
     }
 
     pub fn set8<RW: Reader8 + Writer8>(&mut self, bit: u8, rw: RW) -> &mut Self {
-        let v = rw.read8(self.reg, self.ram) | (1 << bit);
+        let v = rw.read8(self.reg, self.bus) | (1 << bit);
 
-        rw.write8(self.reg, self.ram, v);
+        rw.write8(self.reg, self.bus, v);
         self
     }
 
     pub fn res8<RW: Reader8 + Writer8>(&mut self, bit: u8, rw: RW) -> &mut Self {
-        let v = rw.read8(self.reg, self.ram) & !(1 << bit);
+        let v = rw.read8(self.reg, self.bus) & !(1 << bit);
 
-        rw.write8(self.reg, self.ram, v);
+        rw.write8(self.reg, self.bus, v);
         self
     }
 
     pub fn push16<R: Reader16>(&mut self, r: R) -> &mut Self {
-        let sp = R16::SP.read16(self.reg, self.ram);
-        let v = r.read16(self.reg, self.ram);
-        self.ram.write(sp.wrapping_sub(1), (v >> 8) as u8);
-        self.ram.write(sp.wrapping_sub(2), (v & 0xFF) as u8);
+        let sp = R16::SP.read16(self.reg, self.bus);
+        let v = r.read16(self.reg, self.bus);
+        self.bus.write8(sp.wrapping_sub(1), (v >> 8) as u8);
+        self.bus.write8(sp.wrapping_sub(2), (v & 0xFF) as u8);
 
         self.dec16(R16::SP);
         self.dec16(R16::SP);
@@ -425,9 +425,9 @@ impl<'a> Processor<'a> {
     }
 
     pub fn pop16<W: Writer16>(&mut self, w: W) -> &mut Self {
-        let sp = R16::SP.read16(self.reg, self.ram);
-        let v = self.ram.read(sp) as u16 | ((self.ram.read(sp.wrapping_add(1)) as u16) << 8);
-        w.write16(self.reg, self.ram, v);
+        let sp = R16::SP.read16(self.reg, self.bus);
+        let v = self.bus.read16(sp);
+        w.write16(self.reg, self.bus, v);
 
         self.inc16(R16::SP);
         self.inc16(R16::SP);
@@ -436,7 +436,7 @@ impl<'a> Processor<'a> {
 
     pub fn jp<R: Reader16>(&mut self, cond: Condition, r: R) -> &mut Self {
         if cond.test(self.reg) {
-            let addr = r.read16(self.reg, self.ram);
+            let addr = r.read16(self.reg, self.bus);
             self.reg.PC = addr;
 
             self.extra_cycle += 4;
@@ -446,7 +446,7 @@ impl<'a> Processor<'a> {
 
     pub fn jr<R: Reader8>(&mut self, cond: Condition, r: R) -> &mut Self {
         if cond.test(self.reg) {
-            let offset = r.read8(self.reg, self.ram) as i8;
+            let offset = r.read8(self.reg, self.bus) as i8;
             if 0 < offset {
                 self.reg.PC = self.reg.PC.wrapping_add(offset as u16);
             } else {
@@ -466,7 +466,7 @@ impl<'a> Processor<'a> {
             // Push next instruction onto stack
             self.push16(Data16(next_addr));
 
-            let addr = r.read16(self.reg, self.ram);
+            let addr = r.read16(self.reg, self.bus);
             self.reg.PC = addr;
 
             self.extra_cycle += 12;
@@ -525,6 +525,8 @@ impl<'a> Processor<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::ram::Ram;
+
     use super::*;
 
     #[derive(Debug, PartialEq)]
@@ -612,7 +614,7 @@ mod tests {
 
             let mut p = Processor::new(&mut reg, &mut ram);
             p.ld16(Address::Direct, R16::SP);
-            assert_eq!(vec![0x00, 0x03, 0x00, 0xAB, 0xCD], p.ram.dump());
+            assert_eq!(vec![0x00, 0x03, 0x00, 0xAB, 0xCD], p.bus.dump());
         }
     }
 
@@ -914,9 +916,9 @@ mod tests {
 
         let mut p = Processor::new(&mut reg, &mut ram);
         p.inc8(Address::HL);
-        assert_eq!(0x10, p.ram.read(1));
+        assert_eq!(0x10, p.bus.read8(1));
         p.dec8(Address::HL);
-        assert_eq!(0x0F, p.ram.read(1));
+        assert_eq!(0x0F, p.bus.read8(1));
     }
 
     #[test]
@@ -1129,7 +1131,7 @@ mod tests {
         let mut p = Processor::new(&mut reg, &mut ram);
         p.push16(R16::BC);
         assert_eq!(0x0000, p.reg.SP);
-        assert_eq!(vec![0xCD, 0xAB], p.ram.dump());
+        assert_eq!(vec![0xCD, 0xAB], p.bus.dump());
         p.pop16(R16::DE);
         assert_eq!(0x0002, p.reg.SP);
         assert_eq!(0xABCD, R16::DE.read16(&mut reg, &mut ram));
@@ -1172,7 +1174,7 @@ mod tests {
         p.call(Condition::T, Immediate16);
         assert_eq!(0xCDAB, p.reg.PC);
         assert_eq!(0x0003, p.reg.SP);
-        assert_eq!(vec![0x00, 0xAB, 0xCD, 0x03, 0x00], p.ram.dump());
+        assert_eq!(vec![0x00, 0xAB, 0xCD, 0x03, 0x00], p.bus.dump());
         assert_eq!((0, 12), p.r(0, 0));
         p.ret(Condition::T);
         assert_eq!(0x0003, p.reg.PC);

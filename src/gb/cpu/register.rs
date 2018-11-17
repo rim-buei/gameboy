@@ -1,4 +1,4 @@
-use super::super::ram::Ram;
+use super::super::bus::Bus;
 
 use super::io::{Reader16, Reader8, Writer16, Writer8};
 
@@ -31,7 +31,7 @@ pub enum Register8 {
 }
 
 impl Reader8 for Register8 {
-    fn read8(&self, reg: &mut Registers, _: &mut Ram) -> u8 {
+    fn read8<B: Bus>(&self, reg: &mut Registers, _: &mut B) -> u8 {
         use self::Register8::*;
 
         match *self {
@@ -48,7 +48,7 @@ impl Reader8 for Register8 {
 }
 
 impl Writer8 for Register8 {
-    fn write8(&self, reg: &mut Registers, _: &mut Ram, v: u8) {
+    fn write8<B: Bus>(&self, reg: &mut Registers, _: &mut B, v: u8) {
         use self::Register8::*;
 
         match *self {
@@ -75,7 +75,7 @@ pub enum Register16 {
 }
 
 impl Reader16 for Register16 {
-    fn read16(&self, reg: &mut Registers, _: &mut Ram) -> u16 {
+    fn read16<B: Bus>(&self, reg: &mut Registers, _: &mut B) -> u16 {
         use self::Register16::*;
 
         match *self {
@@ -90,7 +90,7 @@ impl Reader16 for Register16 {
 }
 
 impl Writer16 for Register16 {
-    fn write16(&self, reg: &mut Registers, _: &mut Ram, v: u16) {
+    fn write16<B: Bus>(&self, reg: &mut Registers, _: &mut B, v: u16) {
         use self::Register16::*;
 
         match *self {
@@ -195,50 +195,49 @@ pub enum Address {
 }
 
 impl Address {
-    fn get(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
+    fn get<B: Bus>(&self, reg: &mut Registers, bus: &mut B) -> u16 {
         use self::Address::*;
 
         match *self {
-            BC => Register16::BC.read16(reg, ram),
-            DE => Register16::DE.read16(reg, ram),
-            HL => Register16::HL.read16(reg, ram),
+            BC => Register16::BC.read16(reg, bus),
+            DE => Register16::DE.read16(reg, bus),
+            HL => Register16::HL.read16(reg, bus),
 
-            HLI => Register16::HL.read16(reg, ram).wrapping_add(1),
-            HLD => Register16::HL.read16(reg, ram).wrapping_sub(1),
+            HLI => Register16::HL.read16(reg, bus).wrapping_add(1),
+            HLD => Register16::HL.read16(reg, bus).wrapping_sub(1),
 
-            Direct => Immediate16.read16(reg, ram),
-            FF00 => 0xFF00 + Immediate8.read8(reg, ram) as u16,
+            Direct => Immediate16.read16(reg, bus),
+            FF00 => 0xFF00 + Immediate8.read8(reg, bus) as u16,
             FF00C => 0xFF00 + reg.C as u16,
         }
     }
 }
 
 impl Reader8 for Address {
-    fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
-        let addr = self.get(reg, ram);
-        ram.read(addr)
+    fn read8<B: Bus>(&self, reg: &mut Registers, bus: &mut B) -> u8 {
+        let addr = self.get(reg, bus);
+        bus.read8(addr)
     }
 }
 
 impl Reader16 for Address {
-    fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
-        let addr = self.get(reg, ram);
-        ram.read(addr) as u16 | ((ram.read(addr.wrapping_add(1)) as u16) << 8)
+    fn read16<B: Bus>(&self, reg: &mut Registers, bus: &mut B) -> u16 {
+        let addr = self.get(reg, bus);
+        bus.read16(addr)
     }
 }
 
 impl Writer8 for Address {
-    fn write8(&self, reg: &mut Registers, ram: &mut Ram, v: u8) {
-        let addr = self.get(reg, ram);
-        ram.write(addr, v);
+    fn write8<B: Bus>(&self, reg: &mut Registers, bus: &mut B, v: u8) {
+        let addr = self.get(reg, bus);
+        bus.write8(addr, v);
     }
 }
 
 impl Writer16 for Address {
-    fn write16(&self, reg: &mut Registers, ram: &mut Ram, v: u16) {
-        let addr = self.get(reg, ram);
-        ram.write(addr, (v & 0xFF) as u8);
-        ram.write(addr.wrapping_add(1), (v >> 8) as u8);
+    fn write16<B: Bus>(&self, reg: &mut Registers, bus: &mut B, v: u16) {
+        let addr = self.get(reg, bus);
+        bus.write16(addr, v);
     }
 }
 
@@ -247,8 +246,8 @@ impl Writer16 for Address {
 pub struct Immediate8;
 
 impl Reader8 for Immediate8 {
-    fn read8(&self, reg: &mut Registers, ram: &mut Ram) -> u8 {
-        ram.read(reg.PC.wrapping_add(1))
+    fn read8<B: Bus>(&self, reg: &mut Registers, bus: &mut B) -> u8 {
+        bus.read8(reg.PC.wrapping_add(1))
     }
 }
 
@@ -257,8 +256,8 @@ impl Reader8 for Immediate8 {
 pub struct Immediate16;
 
 impl Reader16 for Immediate16 {
-    fn read16(&self, reg: &mut Registers, ram: &mut Ram) -> u16 {
-        ram.read(reg.PC.wrapping_add(1)) as u16 | ((ram.read(reg.PC.wrapping_add(2)) as u16) << 8)
+    fn read16<B: Bus>(&self, reg: &mut Registers, bus: &mut B) -> u16 {
+        bus.read16(reg.PC.wrapping_add(1))
     }
 }
 
@@ -267,7 +266,7 @@ impl Reader16 for Immediate16 {
 pub struct Data16(pub u16);
 
 impl Reader16 for Data16 {
-    fn read16(&self, _: &mut Registers, _: &mut Ram) -> u16 {
+    fn read16<B: Bus>(&self, _: &mut Registers, _: &mut B) -> u16 {
         self.0
     }
 }
@@ -300,6 +299,8 @@ impl Condition {
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::ram::Ram;
+
     use super::*;
 
     #[test]
