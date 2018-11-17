@@ -1,33 +1,53 @@
-pub mod register;
-
 mod instruction;
 mod io;
 mod processor;
+mod register;
+
+use std::fmt;
 
 use super::bus::Bus;
 
 use self::instruction::{exec, exec_prefix_cb};
 use self::register::Registers;
 
-pub fn step<B: Bus>(reg: &mut Registers, bus: &mut B) -> u8 {
-    let addr = reg.PC;
-    let opcode = bus.read8(addr);
+pub struct Cpu {
+    reg: Registers,
 
-    let (bytes, cycles) = if opcode != 0xCB {
-        // 1-byte instruction
-        exec(opcode, reg, bus)
-    } else {
-        // 2-byte instruction
-        let addr = reg.PC.wrapping_add(1);
-        let opcode = bus.read8(addr);
-
-        exec_prefix_cb(opcode, reg, bus)
-    };
-
-    reg.PC = reg.PC.wrapping_add(bytes as u16);
-    cycles
+    // Interrupt Master Enable Flag
+    ime: bool,
 }
 
-pub fn reset(reg: &mut Registers) {
-    *reg = Registers::new()
+impl Cpu {
+    pub fn new() -> Self {
+        Cpu {
+            reg: register::Registers::new(),
+            ime: false,
+        }
+    }
+
+    pub fn step<B: Bus>(&mut self, bus: &mut B) -> u8 {
+        let addr = self.reg.PC;
+        let opcode = bus.read8(addr);
+
+        let (bytes, cycles) = if opcode != 0xCB {
+            // 1-byte instruction
+            exec(opcode, &mut self.reg, bus)
+        } else {
+            // 2-byte instruction
+            let addr = self.reg.PC.wrapping_add(1);
+            let opcode = bus.read8(addr);
+
+            exec_prefix_cb(opcode, &mut self.reg, bus)
+        };
+
+        self.reg.PC = self.reg.PC.wrapping_add(bytes as u16);
+        cycles
+    }
+}
+
+impl fmt::Debug for Cpu {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let pc = self.reg.PC;
+        write!(f, "PC: 0x{:04X}", pc)
+    }
 }

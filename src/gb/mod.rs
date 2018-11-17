@@ -6,6 +6,5 @@ pub mod mmu;
 pub mod ram;
 
 pub struct Context {
-    registers: cpu::register::Registers,
-    ram: ram::Ram,
+    mmu: mmu::Mmu,
 }
