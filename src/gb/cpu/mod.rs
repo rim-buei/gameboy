@@ -1,7 +1,8 @@
 mod instruction;
 mod io;
+mod oprand;
 mod processor;
-mod register;
+mod state;
 
 use std::fmt;
 
