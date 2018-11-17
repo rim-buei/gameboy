@@ -1,10 +1,10 @@
 use super::super::bus::Bus;
-
+use super::oprand::{Address, Condition, Immediate16, Immediate8, Register16 as R16, Register8 as R8};
 use super::processor::Processor;
-use super::register::{Address, Condition, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers};
+use super::state::State;
 
-pub fn exec<B: Bus>(opcode: u8, reg: &mut Registers, bus: &mut B) -> (u8, u8) {
-    let mut p = Processor::new(reg, bus);
+pub fn exec<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
+    let mut p = Processor::new(state, bus);
 
     match opcode {
         0x00 => (1, 4),                                      // [NOP] [1  4] [- - - -]
@@ -267,8 +267,8 @@ pub fn exec<B: Bus>(opcode: u8, reg: &mut Registers, bus: &mut B) -> (u8, u8) {
     }
 }
 
-pub fn exec_prefix_cb<B: Bus>(opcode: u8, reg: &mut Registers, bus: &mut B) -> (u8, u8) {
-    let mut p = Processor::new(reg, bus);
+pub fn exec_prefix_cb<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
+    let mut p = Processor::new(state, bus);
 
     match opcode {
         0x00 => p.rlc8(R8::B).r(2, 8),           // [RLC B] [2  8] [Z 0 0 C]
