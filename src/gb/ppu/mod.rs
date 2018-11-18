@@ -10,6 +10,14 @@ const SCREEN_H: u8 = 144;
 
 const ONE_CYCLE: u16 = 456;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum Mode {
+    HBlank,   // Mode 0
+    VBlank,   // Mode 1
+    OAMRead,  // Mode 2
+    VRAMRead, // Mode 3
+}
+
 pub struct Ppu {
     state: State,
 }
@@ -36,10 +44,10 @@ impl Ppu {
                 request_interrupt(bus, Interrupt::VBlank);
             } else if next_line > SCREEN_H + 9 {
                 next_line = 0;
-            } else {
-                self.render_scanline();
             }
             LY.write(bus, next_line);
+
+            self.state.line_drawn = false;
         }
     }
 
@@ -59,6 +67,11 @@ impl Ppu {
                     status.is_oam_interrupt_enabled()
                 }
                 80...251 => {
+                    if !self.state.line_drawn {
+                        self.render_scanline();
+                        self.state.line_drawn = true;
+                    }
+
                     status.set_mode(Mode::VRAMRead);
                     false
                 }
@@ -113,6 +126,7 @@ impl fmt::Debug for Ppu {
 
 pub struct State {
     clock: u16,
+    line_drawn: bool,
 
     lcd: LCDStatus, // For debugging
 }
@@ -121,18 +135,11 @@ impl State {
     fn new() -> Self {
         State {
             clock: 0,
+            line_drawn: false,
 
             lcd: LCDStatus(0),
         }
     }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum Mode {
-    HBlank,   // Mode 0
-    VBlank,   // Mode 1
-    OAMRead,  // Mode 2
-    VRAMRead, // Mode 3
 }
 
 #[derive(Copy, Clone)]
@@ -156,10 +163,10 @@ impl LCDStatus {
     fn set_mode(&mut self, mode: Mode) {
         self.0 &= 0b1111_1100;
         self.0 |= match mode {
-            Mode::HBlank => 0,
-            Mode::VBlank => 1,
-            Mode::OAMRead => 2,
-            Mode::VRAMRead => 3,
+            Mode::HBlank => 0b00,
+            Mode::VBlank => 0b01,
+            Mode::OAMRead => 0b10,
+            Mode::VRAMRead => 0b11,
         };
     }
 
