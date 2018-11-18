@@ -542,8 +542,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
-        println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
-        self
+        panic!("unsupported or unknown opcode specified: 0x{:02X}", opcode);
     }
 }
 
