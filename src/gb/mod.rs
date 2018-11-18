@@ -1,5 +1,6 @@
 pub mod cpu;
 pub mod mmu;
+pub mod ppu;
 
 mod bus;
 mod cartridge;
@@ -8,5 +9,6 @@ mod ram;
 
 pub struct GameBoy {
     cpu: cpu::Cpu,
+    ppu: ppu::Ppu,
     mmu: mmu::Mmu,
 }
