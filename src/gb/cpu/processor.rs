@@ -1,6 +1,6 @@
 use super::super::bus::Bus;
 use super::io::{Reader16, Reader8, Writer16, Writer8};
-use super::oprand::{Address, Condition, Data16, Immediate16, Immediate8, Register16 as R16, Register8 as R8};
+use super::oprand::{Condition, Data16, Immediate8, Register16 as R16, Register8 as R8};
 use super::state::{Flag, State};
 
 pub struct Processor<'a, B: Bus + 'a> {
@@ -550,6 +550,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 #[cfg(test)]
 mod tests {
     use super::super::super::ram::Ram;
+    use super::super::oprand::{Address, Immediate16};
 
     use super::*;
 

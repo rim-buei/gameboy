@@ -24,7 +24,7 @@ impl Bus for Ram {
     }
 
     fn write8(&mut self, addr: u16, data: u8) {
-        self.array[addr as usize] = data
+        self.array[addr as usize] = data;
     }
 
     fn write16(&mut self, addr: u16, data: u16) {

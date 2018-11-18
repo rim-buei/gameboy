@@ -1,10 +1,12 @@
-pub mod bus;
-pub mod cartridge;
 pub mod cpu;
-pub mod interrupt;
 pub mod mmu;
-pub mod ram;
 
-pub struct Context {
+mod bus;
+mod cartridge;
+mod interrupt;
+mod ram;
+
+pub struct GameBoy {
+    cpu: cpu::Cpu,
     mmu: mmu::Mmu,
 }
