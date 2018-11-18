@@ -1,6 +1,6 @@
 mod register;
 
-use self::register::Register::*;
+use self::register::{LCDStatus, Register::*};
 use super::bus::Bus;
 use super::interrupt::{request as request_interrupt, Interrupt};
 use std::fmt;
@@ -52,7 +52,7 @@ impl Ppu {
     }
 
     fn update_lcd_status<B: Bus>(&mut self, bus: &mut B) {
-        let mut status = LCDStatus(STAT.read(bus));
+        let mut status = LCDStatus::new(STAT.read(bus));
 
         let cur_line = LY.read(bus);
         let cur_mode = status.mode();
@@ -137,59 +137,7 @@ impl State {
             clock: 0,
             line_drawn: false,
 
-            lcd: LCDStatus(0),
+            lcd: LCDStatus::new(0),
         }
-    }
-}
-
-#[derive(Copy, Clone)]
-struct LCDStatus(u8);
-
-impl LCDStatus {
-    fn new(v: u8) -> Self {
-        LCDStatus(v)
-    }
-
-    fn mode(&self) -> Mode {
-        match self.0 & 0b0000_0011 {
-            0 => Mode::HBlank,
-            1 => Mode::VBlank,
-            2 => Mode::OAMRead,
-            3 => Mode::VRAMRead,
-            _ => panic!("unreachable"),
-        }
-    }
-
-    fn set_mode(&mut self, mode: Mode) {
-        self.0 &= 0b1111_1100;
-        self.0 |= match mode {
-            Mode::HBlank => 0b00,
-            Mode::VBlank => 0b01,
-            Mode::OAMRead => 0b10,
-            Mode::VRAMRead => 0b11,
-        };
-    }
-
-    fn set_lyc_coincidence(&mut self, v: bool) {
-        self.0 &= 0b1111_1011;
-        if v {
-            self.0 |= 0b0100;
-        }
-    }
-
-    fn is_hblank_interrupt_enabled(&self) -> bool {
-        self.0 & 0b0000_1000 != 0
-    }
-
-    fn is_vblank_interrupt_enabled(&self) -> bool {
-        self.0 & 0b0001_0000 != 0
-    }
-
-    fn is_oam_interrupt_enabled(&self) -> bool {
-        self.0 & 0b0010_0000 != 0
-    }
-
-    fn is_lyc_coincidence_interrupt_enabled(&self) -> bool {
-        self.0 & 0b0100_0000 != 0
     }
 }

@@ -1,4 +1,5 @@
 use super::super::bus::Bus;
+use super::Mode;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Register {
@@ -42,5 +43,61 @@ impl Register {
             WY => 0xFF4A,
             WX => 0xFF4B,
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct LCDStatus(u8);
+
+impl LCDStatus {
+    pub fn new(v: u8) -> Self {
+        LCDStatus(v)
+    }
+
+    pub fn raw(&self) -> u8 {
+        self.0
+    }
+
+    pub fn mode(&self) -> Mode {
+        match self.0 & 0b0000_0011 {
+            0 => Mode::HBlank,
+            1 => Mode::VBlank,
+            2 => Mode::OAMRead,
+            3 => Mode::VRAMRead,
+            _ => panic!("unreachable"),
+        }
+    }
+
+    pub fn set_mode(&mut self, mode: Mode) {
+        self.0 &= 0b1111_1100;
+        self.0 |= match mode {
+            Mode::HBlank => 0b00,
+            Mode::VBlank => 0b01,
+            Mode::OAMRead => 0b10,
+            Mode::VRAMRead => 0b11,
+        };
+    }
+
+    pub fn set_lyc_coincidence(&mut self, v: bool) {
+        self.0 &= 0b1111_1011;
+        if v {
+            self.0 |= 0b0100;
+        }
+    }
+
+    pub fn is_hblank_interrupt_enabled(&self) -> bool {
+        self.0 & 0b0000_1000 != 0
+    }
+
+    pub fn is_vblank_interrupt_enabled(&self) -> bool {
+        self.0 & 0b0001_0000 != 0
+    }
+
+    pub fn is_oam_interrupt_enabled(&self) -> bool {
+        self.0 & 0b0010_0000 != 0
+    }
+
+    pub fn is_lyc_coincidence_interrupt_enabled(&self) -> bool {
+        self.0 & 0b0100_0000 != 0
     }
 }
