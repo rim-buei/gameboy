@@ -59,12 +59,12 @@ impl Ppu {
 
         let interrupt = if cur_line >= SCREEN_H {
             status.set_mode(Mode::VBlank);
-            status.vblank_interrupt()
+            status.vblank_interrupt_enabled()
         } else {
             match self.state.clock {
                 0...79 => {
                     status.set_mode(Mode::OAMRead);
-                    status.oam_interrupt()
+                    status.oam_interrupt_enabled()
                 }
                 80...251 => {
                     if !self.state.line_drawn {
@@ -77,7 +77,7 @@ impl Ppu {
                 }
                 _ => {
                     status.set_mode(Mode::HBlank);
-                    status.hblank_interrupt()
+                    status.hblank_interrupt_enabled()
                 }
             }
         };
@@ -89,7 +89,7 @@ impl Ppu {
         if cur_line == LYC.read(bus) {
             status.set_lyc_coincidence(true);
 
-            if status.lyc_coincidence_interrupt() {
+            if status.lyc_coincidence_interrupt_enabled() {
                 request_interrupt(bus, Interrupt::LCDStat);
             }
         } else {
@@ -101,14 +101,14 @@ impl Ppu {
     }
 
     fn render_scanline<B: Bus>(&mut self, bus: &mut B) {
-        self.render_background_scanline(bus);
-        self.render_window_scanline(bus);
-        self.render_sprites_scanline(bus);
+        self.render_bg(bus);
+        self.render_win(bus);
+        self.render_obj(bus);
     }
 
-    fn render_background_scanline<B: Bus>(&mut self, bus: &mut B) {}
-    fn render_window_scanline<B: Bus>(&mut self, bus: &mut B) {}
-    fn render_sprites_scanline<B: Bus>(&mut self, bus: &mut B) {}
+    fn render_bg<B: Bus>(&mut self, bus: &mut B) {}
+    fn render_win<B: Bus>(&mut self, bus: &mut B) {}
+    fn render_obj<B: Bus>(&mut self, bus: &mut B) {}
 }
 
 impl fmt::Debug for Ppu {

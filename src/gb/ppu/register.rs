@@ -62,11 +62,11 @@ impl LCDControl {
         self.0 & (1 << 0) != 0
     }
 
-    pub fn sprites_enabled(&self) -> bool {
+    pub fn obj_enabled(&self) -> bool {
         self.0 & (1 << 1) != 0
     }
 
-    pub fn sprites_height(&self) -> u8 {
+    pub fn obj_height(&self) -> u8 {
         if self.0 & (1 << 2) == 0 {
             8
         } else {
@@ -146,19 +146,19 @@ impl LCDStatus {
         }
     }
 
-    pub fn hblank_interrupt(&self) -> bool {
+    pub fn hblank_interrupt_enabled(&self) -> bool {
         self.0 & 0b0000_1000 != 0
     }
 
-    pub fn vblank_interrupt(&self) -> bool {
+    pub fn vblank_interrupt_enabled(&self) -> bool {
         self.0 & 0b0001_0000 != 0
     }
 
-    pub fn oam_interrupt(&self) -> bool {
+    pub fn oam_interrupt_enabled(&self) -> bool {
         self.0 & 0b0010_0000 != 0
     }
 
-    pub fn lyc_coincidence_interrupt(&self) -> bool {
+    pub fn lyc_coincidence_interrupt_enabled(&self) -> bool {
         self.0 & 0b0100_0000 != 0
     }
 }
