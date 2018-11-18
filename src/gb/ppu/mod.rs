@@ -59,16 +59,16 @@ impl Ppu {
 
         let interrupt = if cur_line >= SCREEN_H {
             status.set_mode(Mode::VBlank);
-            status.is_vblank_interrupt_enabled()
+            status.vblank_interrupt()
         } else {
             match self.state.clock {
                 0...79 => {
                     status.set_mode(Mode::OAMRead);
-                    status.is_oam_interrupt_enabled()
+                    status.oam_interrupt()
                 }
                 80...251 => {
                     if !self.state.line_drawn {
-                        self.render_scanline();
+                        self.render_scanline(bus);
                         self.state.line_drawn = true;
                     }
 
@@ -77,7 +77,7 @@ impl Ppu {
                 }
                 _ => {
                     status.set_mode(Mode::HBlank);
-                    status.is_hblank_interrupt_enabled()
+                    status.hblank_interrupt()
                 }
             }
         };
@@ -89,7 +89,7 @@ impl Ppu {
         if cur_line == LYC.read(bus) {
             status.set_lyc_coincidence(true);
 
-            if status.is_lyc_coincidence_interrupt_enabled() {
+            if status.lyc_coincidence_interrupt() {
                 request_interrupt(bus, Interrupt::LCDStat);
             }
         } else {
@@ -97,20 +97,18 @@ impl Ppu {
         }
 
         self.state.lcd = status;
-        STAT.write(bus, status.0);
+        STAT.write(bus, status.raw());
     }
 
-    fn render_scanline(&mut self) {
-        self.render_background_scanline();
-        self.render_window_scanline();
-        self.render_sprites_scanline();
+    fn render_scanline<B: Bus>(&mut self, bus: &mut B) {
+        self.render_background_scanline(bus);
+        self.render_window_scanline(bus);
+        self.render_sprites_scanline(bus);
     }
 
-    fn render_background_scanline(&mut self) {}
-
-    fn render_window_scanline(&mut self) {}
-
-    fn render_sprites_scanline(&mut self) {}
+    fn render_background_scanline<B: Bus>(&mut self, bus: &mut B) {}
+    fn render_window_scanline<B: Bus>(&mut self, bus: &mut B) {}
+    fn render_sprites_scanline<B: Bus>(&mut self, bus: &mut B) {}
 }
 
 impl fmt::Debug for Ppu {

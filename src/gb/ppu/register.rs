@@ -47,6 +47,67 @@ impl Register {
 }
 
 #[derive(Copy, Clone)]
+pub struct LCDControl(u8);
+
+impl LCDControl {
+    pub fn new(v: u8) -> Self {
+        LCDControl(v)
+    }
+
+    pub fn raw(&self) -> u8 {
+        self.0
+    }
+
+    pub fn bgwin_enabled(&self) -> bool {
+        self.0 & (1 << 0) != 0
+    }
+
+    pub fn sprites_enabled(&self) -> bool {
+        self.0 & (1 << 1) != 0
+    }
+
+    pub fn sprites_height(&self) -> u8 {
+        if self.0 & (1 << 2) == 0 {
+            8
+        } else {
+            16
+        }
+    }
+
+    pub fn bg_map_loc(&self) -> u16 {
+        if self.0 & (1 << 3) == 0 {
+            0x9800
+        } else {
+            0x9C00
+        }
+    }
+
+    pub fn bgwin_tile_loc(&self) -> u16 {
+        if self.0 & (1 << 4) == 0 {
+            0x8800
+        } else {
+            0x8000
+        }
+    }
+
+    pub fn win_enabled(&self) -> bool {
+        self.0 & (1 << 5) != 0
+    }
+
+    pub fn win_map_loc(&self) -> u16 {
+        if self.0 & (1 << 6) == 0 {
+            0x9800
+        } else {
+            0x9C00
+        }
+    }
+
+    pub fn lcd_enabled(&self) -> bool {
+        self.0 & (1 << 7) != 0
+    }
+}
+
+#[derive(Copy, Clone)]
 pub struct LCDStatus(u8);
 
 impl LCDStatus {
@@ -85,19 +146,19 @@ impl LCDStatus {
         }
     }
 
-    pub fn is_hblank_interrupt_enabled(&self) -> bool {
+    pub fn hblank_interrupt(&self) -> bool {
         self.0 & 0b0000_1000 != 0
     }
 
-    pub fn is_vblank_interrupt_enabled(&self) -> bool {
+    pub fn vblank_interrupt(&self) -> bool {
         self.0 & 0b0001_0000 != 0
     }
 
-    pub fn is_oam_interrupt_enabled(&self) -> bool {
+    pub fn oam_interrupt(&self) -> bool {
         self.0 & 0b0010_0000 != 0
     }
 
-    pub fn is_lyc_coincidence_interrupt_enabled(&self) -> bool {
+    pub fn lyc_coincidence_interrupt(&self) -> bool {
         self.0 & 0b0100_0000 != 0
     }
 }
