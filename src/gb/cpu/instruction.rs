@@ -1,10 +1,10 @@
-use super::super::ram::Ram;
-
+use super::super::bus::Bus;
+use super::oprand::{Address, Condition, Immediate16, Immediate8, Register16 as R16, Register8 as R8};
 use super::processor::Processor;
-use super::register::{Address, Condition, Immediate16, Immediate8, Register16 as R16, Register8 as R8, Registers};
+use super::state::State;
 
-pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    let mut p = Processor::new(reg, ram);
+pub fn exec<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
+    let mut p = Processor::new(state, bus);
 
     match opcode {
         0x00 => (1, 4),                                      // [NOP] [1  4] [- - - -]
@@ -23,7 +23,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x0D => p.dec8(R8::C).r(1, 4),                       // [DEC C] [1  4] [Z 1 H -]
         0x0E => p.ld8(R8::C, Immediate8).r(2, 8),            // [LD C,d8] [2  8] [- - - -]
         0x0F => p.rrca().r(1, 4),                            // [RRCA] [1  4] [0 0 0 C]
-        0x10 => (0, 0),                                      // TODO: [STOP 0] [2  4] [- - - -]
+        0x10 => p.undefined(opcode).r(0, 0),                 // TODO: [STOP 0] [2  4] [- - - -]
         0x11 => p.ld16(R16::DE, Immediate16).r(3, 12),       // [LD DE,d16] [3  12] [- - - -]
         0x12 => p.ld8(Address::DE, R8::A).r(1, 8),           // [LD (DE),A] [1  8] [- - - -]
         0x13 => p.inc16(R16::DE).r(1, 8),                    // [INC DE] [1  8] [- - - -]
@@ -41,7 +41,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x1F => p.rra().r(1, 4),                             // [RRA] [1  4] [0 0 0 C]
         0x20 => p.jr(Condition::NZ, Immediate8).r(2, 8),     // [JR NZ,r8] [2  12/8] [- - - -]
         0x21 => p.ld16(R16::HL, Immediate16).r(3, 12),       // [LD HL,d16] [3  12] [- - - -]
-        0x22 => p.ld8(Address::HLI, R8::A).r(1, 8),          // [LD (HL+),A] [1  8] [- - - -]
+        0x22 => p.ld8_hli(Address::HL, R8::A).r(1, 8),       // [LD (HL+),A] [1  8] [- - - -]
         0x23 => p.inc16(R16::HL).r(1, 8),                    // [INC HL] [1  8] [- - - -]
         0x24 => p.inc8(R8::H).r(1, 4),                       // [INC H] [1  4] [Z 0 H -]
         0x25 => p.dec8(R8::H).r(1, 4),                       // [DEC H] [1  4] [Z 1 H -]
@@ -49,7 +49,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x27 => p.daa().r(1, 4),                             // [DAA] [1  4] [Z - 0 C]
         0x28 => p.jr(Condition::Z, Immediate8).r(2, 8),      // [JR Z,r8] [2  12/8] [- - - -]
         0x29 => p.add16(R16::HL).r(1, 8),                    // [ADD HL,HL] [1  8] [- 0 H C]
-        0x2A => p.ld8(R8::A, Address::HLI).r(1, 8),          // [LD A,(HL+)] [1  8] [- - - -]
+        0x2A => p.ld8_hli(R8::A, Address::HL).r(1, 8),       // [LD A,(HL+)] [1  8] [- - - -]
         0x2B => p.dec16(R16::HL).r(1, 8),                    // [DEC HL] [1  8] [- - - -]
         0x2C => p.inc8(R8::L).r(1, 4),                       // [INC L] [1  4] [Z 0 H -]
         0x2D => p.dec8(R8::L).r(1, 4),                       // [DEC L] [1  4] [Z 1 H -]
@@ -57,7 +57,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x2F => p.cpl().r(1, 4),                             // [CPL] [1  4] [- 1 1 -]
         0x30 => p.jr(Condition::NC, Immediate8).r(2, 8),     // [JR NC,r8] [2  12/8] [- - - -]
         0x31 => p.ld16(R16::SP, Immediate16).r(3, 12),       // [LD SP,d16] [3  12] [- - - -]
-        0x32 => p.ld8(Address::HLD, R8::A).r(1, 8),          // [LD (HL-),A] [1  8] [- - - -]
+        0x32 => p.ld8_hld(Address::HL, R8::A).r(1, 8),       // [LD (HL-),A] [1  8] [- - - -]
         0x33 => p.inc16(R16::SP).r(1, 8),                    // [INC SP] [1  8] [- - - -]
         0x34 => p.inc8(Address::HL).r(1, 12),                // [INC (HL)] [1  12] [Z 0 H -]
         0x35 => p.dec8(Address::HL).r(1, 12),                // [DEC (HL)] [1  12] [Z 1 H -]
@@ -65,7 +65,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x37 => p.scf().r(1, 4),                             // [SCF] [1  4] [- 0 0 1]
         0x38 => p.jr(Condition::C, Immediate8).r(2, 8),      // [JR C,r8] [2  12/8] [- - - -]
         0x39 => p.add16(R16::SP).r(1, 8),                    // [ADD HL,SP] [1  8] [- 0 H C]
-        0x3A => p.ld8(R8::A, Address::HLD).r(1, 8),          // [LD A,(HL-)] [1  8] [- - - -]
+        0x3A => p.ld8_hld(R8::A, Address::HL).r(1, 8),       // [LD A,(HL-)] [1  8] [- - - -]
         0x3B => p.dec16(R16::SP).r(1, 8),                    // [DEC SP] [1  8] [- - - -]
         0x3C => p.inc8(R8::A).r(1, 4),                       // [INC A] [1  4] [Z 0 H -]
         0x3D => p.dec8(R8::A).r(1, 4),                       // [DEC A] [1  4] [Z 1 H -]
@@ -125,7 +125,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0x73 => p.ld8(Address::HL, R8::E).r(1, 8),           // [LD (HL),E] [1  8] [- - - -]
         0x74 => p.ld8(Address::HL, R8::H).r(1, 8),           // [LD (HL),H] [1  8] [- - - -]
         0x75 => p.ld8(Address::HL, R8::L).r(1, 8),           // [LD (HL),L] [1  8] [- - - -]
-        0x76 => (0, 0),                                      // TODO: [HALT] [1  4] [- - - -]
+        0x76 => p.undefined(opcode).r(0, 0),                 // TODO: [HALT] [1  4] [- - - -]
         0x77 => p.ld8(Address::HL, R8::A).r(1, 8),           // [LD (HL),A] [1  8] [- - - -]
         0x78 => p.ld8(R8::A, R8::B).r(1, 4),                 // [LD A,B] [1  4] [- - - -]
         0x79 => p.ld8(R8::A, R8::C).r(1, 4),                 // [LD A,C] [1  4] [- - - -]
@@ -224,7 +224,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xD6 => p.sub8(Immediate8).r(2, 8),                  // [SUB A,d8] [2  8] [Z 1 H C]
         0xD7 => p.rst(0x10).r(0, 16),                        // [RST 10H] [1  16] [- - - -]
         0xD8 => p.ret(Condition::C).r(0, 8),                 // [RET C] [1  20/8] [- - - -]
-        0xD9 => (0, 0),                                      // TODO: [RETI] [1  16] [- - - -]
+        0xD9 => p.reti().r(1, 4),                            // [RETI] [1  16] [- - - -]
         0xDA => p.jp(Condition::C, Immediate16).r(3, 12),    // [JP C,a16] [3  16/12] [- - - -]
         0xDB => p.undefined(opcode).r(1, 0),                 // [Undefined]
         0xDC => p.call(Condition::C, Immediate16).r(0, 12),  // [CALL C,a16] [3  24/12] [- - - -]
@@ -250,7 +250,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF0 => p.ld8(R8::A, Address::FF00).r(2, 12),        // [LDH A,(a8)] [2  12] [- - - -]
         0xF1 => p.pop16(R16::AF).r(1, 12),                   // [POP AF] [1  12] [- - - -]
         0xF2 => p.ld8(R8::A, Address::FF00C).r(2, 8),        // [LDH A,(C)] [2  8] [- - - -]
-        0xF3 => (0, 0),                                      // TODO: [DI] [1  4] [- - - -]
+        0xF3 => p.di().r(1, 4),                              // [DI] [1  4] [- - - -]
         0xF4 => p.undefined(opcode).r(1, 0),                 // [Undefined]
         0xF5 => p.push16(R16::AF).r(1, 16),                  // [PUSH AF] [1  16] [- - - -]
         0xF6 => p.or8(Immediate8).r(2, 8),                   // [OR d8] [2  8] [Z 0 0 0]
@@ -258,7 +258,7 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
         0xF8 => p.ld_hl_sp_e8().r(2, 12),                    // [LD HL,SP+r8] [2  12] [0 0 H C]
         0xF9 => p.ld16(R16::SP, R16::HL).r(1, 8),            // [LD SP,HL] [1  8] [- - - -]
         0xFA => p.ld8(R8::A, Address::Direct).r(3, 16),      // [LD A,(a16)] [3  16] [- - - -]
-        0xFB => (0, 0),                                      // TODO: [EI] [1  4] [- - - -]
+        0xFB => p.ei().r(1, 4),                              // [EI] [1  4] [- - - -]
         0xFC => p.undefined(opcode).r(1, 0),                 // [Undefined]
         0xFD => p.undefined(opcode).r(1, 0),                 // [Undefined]
         0xFE => p.cp8(Immediate8).r(2, 8),                   // [CP d8] [2  8] [Z 1 H C]
@@ -267,8 +267,8 @@ pub fn exec(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
     }
 }
 
-pub fn exec_prefix_cb(opcode: u8, reg: &mut Registers, ram: &mut Ram) -> (u8, u8) {
-    let mut p = Processor::new(reg, ram);
+pub fn exec_prefix_cb<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
+    let mut p = Processor::new(state, bus);
 
     match opcode {
         0x00 => p.rlc8(R8::B).r(2, 8),           // [RLC B] [2  8] [Z 0 0 C]
