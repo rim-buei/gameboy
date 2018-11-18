@@ -4,9 +4,10 @@ mod oprand;
 mod processor;
 mod state;
 
-use self::instruction::{exec, exec_prefix_cb};
+use self::instruction::{exec, exec_prefix_cb, interrupt};
 use self::state::State;
 use super::bus::Bus;
+use super::interrupt::{receive as receive_interrupt, Interrupt};
 use std::fmt;
 
 pub struct Cpu {
@@ -19,6 +20,10 @@ impl Cpu {
     }
 
     pub fn step<B: Bus>(&mut self, bus: &mut B) -> u8 {
+        self.process_interrupt(bus) + self.process_instruction(bus)
+    }
+
+    fn process_instruction<B: Bus>(&mut self, bus: &mut B) -> u8 {
         let addr = self.state.PC;
         let opcode = bus.read8(addr);
 
@@ -36,12 +41,30 @@ impl Cpu {
         self.state.PC = self.state.PC.wrapping_add(bytes as u16);
         cycles
     }
+
+    fn process_interrupt<B: Bus>(&mut self, bus: &mut B) -> u8 {
+        if !self.state.IME {
+            return 0;
+        }
+        self.state.IME = false;
+
+        let pc = match receive_interrupt(bus) {
+            Interrupt::VBlank => 0x40,
+            Interrupt::LCDStat => 0x48,
+            Interrupt::Timer => 0x50,
+            Interrupt::Serial => 0x58,
+            Interrupt::Joypad => 0x60,
+
+            Interrupt::None => return 0,
+        };
+        interrupt(pc, &mut self.state, bus)
+    }
 }
 
 impl fmt::Debug for Cpu {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let pc = self.state.PC;
         let hl = ((self.state.H as u16) << 8) + (self.state.L as u16);
-        write!(f, "PC: 0x{:04X}, HL 0x{:04X}", pc, hl)
+        write!(f, "[CPU] PC: 0x{:04X}, HL 0x{:04X}", pc, hl)
     }
 }

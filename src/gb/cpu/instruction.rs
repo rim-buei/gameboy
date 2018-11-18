@@ -530,3 +530,12 @@ pub fn exec_prefix_cb<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8
         _ => p.undefined(opcode).r(1, 0),
     }
 }
+
+pub fn interrupt<B: Bus>(handler_addr: u16, state: &mut State, bus: &mut B) -> u8 {
+    let mut p = Processor::new(state, bus);
+
+    p.push16(R16::PC);
+    state.PC = handler_addr;
+
+    20 // Cycles
+}
