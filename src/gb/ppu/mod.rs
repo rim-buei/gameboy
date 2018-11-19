@@ -3,10 +3,8 @@ mod register;
 use self::register::{LCDStatus, Register::*};
 use super::bus::Bus;
 use super::interrupt::{request as request_interrupt, Interrupt};
+use super::screen::SCREEN_H;
 use std::fmt;
-
-const SCREEN_W: u8 = 160;
-const SCREEN_H: u8 = 144;
 
 const ONE_CYCLE: u16 = 456;
 
