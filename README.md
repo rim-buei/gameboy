@@ -28,7 +28,7 @@ Clone this repo and launch `cargo-web`.
 ```sh
 $ git clone https://github.com/rim-buei/gameboy.git
 $ cd gameboy
-$ cargo web start --target wasm32-unknown-unknown
+$ cargo web start --bin wasm --target wasm32-unknown-unknown
 ```
 
 Then, browse `http://localhost:8000`.
