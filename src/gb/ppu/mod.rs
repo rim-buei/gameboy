@@ -1,6 +1,8 @@
 mod register;
+mod renderer;
 
 use self::register::{LCDStatus, Register::*};
+use self::renderer::Renderer;
 use super::bus::Bus;
 use super::interrupt::{request as request_interrupt, Interrupt};
 use super::screen::{FrameBuffer, SCREEN_H};
@@ -75,7 +77,8 @@ impl Ppu {
                 }
                 80...251 => {
                     if !self.state.line_drawn {
-                        self.render_scanline(bus);
+                        let mut renderer = Renderer::new(&mut self.screen_buffer, bus);
+                        renderer.render_scanline();
                         self.state.line_drawn = true;
                     }
 
@@ -119,16 +122,6 @@ impl Ppu {
         self.state.screen_prepared = false;
         self.screen
     }
-
-    fn render_scanline<B: Bus>(&mut self, bus: &mut B) {
-        self.render_bg(bus);
-        self.render_win(bus);
-        self.render_obj(bus);
-    }
-
-    fn render_bg<B: Bus>(&mut self, bus: &mut B) {}
-    fn render_win<B: Bus>(&mut self, bus: &mut B) {}
-    fn render_obj<B: Bus>(&mut self, bus: &mut B) {}
 }
 
 impl fmt::Debug for Ppu {
