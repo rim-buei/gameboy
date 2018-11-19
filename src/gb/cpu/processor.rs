@@ -4,8 +4,8 @@ use super::oprand::{Condition, Data16, Immediate8, Register16 as R16, Register8 
 use super::state::{Flag, State};
 
 pub struct Processor<'a, B: Bus + 'a> {
-    pub state: &'a mut State,
-    pub bus: &'a mut B,
+    state: &'a mut State,
+    bus: &'a mut B,
 
     extra_cycle: u8,
 }
