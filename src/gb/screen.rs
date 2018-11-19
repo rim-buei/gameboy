@@ -4,7 +4,7 @@ const SCREEN_W_SZ: usize = SCREEN_W as usize;
 const SCREEN_H_SZ: usize = SCREEN_H as usize;
 
 #[derive(Copy, Clone)]
-pub struct Pixel(u8, u8, u8, u8);
+pub struct Pixel(pub u8, pub u8, pub u8, pub u8);
 
 #[derive(Copy, Clone)]
 pub struct FrameBuffer {
@@ -52,11 +52,11 @@ impl Screen {
 
     pub fn dump(&self) -> Vec<u8> {
         let wxh = self.width() * self.height();
-        let mut array = Vec::with_capacity(4 * wxh as usize);
+        let mut array: Vec<u8> = Vec::with_capacity(4 * wxh as usize);
 
         for i in 0..wxh {
-            let x = i as u8 % SCREEN_W;
-            let y = i as u8 / SCREEN_W;
+            let x = (i % SCREEN_W as u16) as u8;
+            let y = (i / SCREEN_W as u16) as u8;
             let pixel = self.frame_buffer.get_pixel(x, y);
 
             array.push(pixel.0);

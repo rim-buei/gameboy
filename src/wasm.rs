@@ -12,9 +12,9 @@ use stdweb::web::html_element::CanvasElement;
 use stdweb::web::{document, set_timeout, CanvasRenderingContext2d};
 
 fn main() {
-    let mut screen = Rc::new(RefCell::new(Screen::new()));
-
     stdweb::initialize();
+
+    let screen = Rc::new(RefCell::new(Screen::new()));
 
     let canvas: CanvasElement = document()
         .query_selector("canvas")
@@ -24,12 +24,12 @@ fn main() {
         .unwrap();
     let ctx: CanvasRenderingContext2d = canvas.get_context().unwrap();
 
-    async_render_loop(ctx, screen);
+    async_render_loop(screen.clone(), ctx);
 
     stdweb::event_loop();
 }
 
-fn async_render_loop(ctx: CanvasRenderingContext2d, screen: Rc<RefCell<Screen>>) {
+fn async_render_loop(screen: Rc<RefCell<Screen>>, ctx: CanvasRenderingContext2d) {
     set_timeout(
         move || {
             let array = screen.borrow().dump();
@@ -42,7 +42,7 @@ fn async_render_loop(ctx: CanvasRenderingContext2d, screen: Rc<RefCell<Screen>>)
                 ), 0, 0);
             }
 
-            async_render_loop(ctx, screen);
+            async_render_loop(screen, ctx);
         },
         1000 / 60, // 60 FPS
     );
