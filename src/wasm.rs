@@ -24,12 +24,12 @@ fn main() {
         .unwrap();
     let ctx: CanvasRenderingContext2d = canvas.get_context().unwrap();
 
-    async_render_loop(screen.clone(), ctx);
+    async_render_loop(ctx, screen.clone());
 
     stdweb::event_loop();
 }
 
-fn async_render_loop(screen: Rc<RefCell<Screen>>, ctx: CanvasRenderingContext2d) {
+fn async_render_loop(ctx: CanvasRenderingContext2d, screen: Rc<RefCell<Screen>>) {
     set_timeout(
         move || {
             let array = screen.borrow().dump();
@@ -42,7 +42,7 @@ fn async_render_loop(screen: Rc<RefCell<Screen>>, ctx: CanvasRenderingContext2d)
                 ), 0, 0);
             }
 
-            async_render_loop(screen, ctx);
+            async_render_loop(ctx, screen);
         },
         1000 / 60, // 60 FPS
     );
