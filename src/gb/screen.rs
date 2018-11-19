@@ -29,23 +29,21 @@ impl FrameBuffer {
 
 pub struct Screen {
     frame_buffer: FrameBuffer,
-    scale: u16,
 }
 
 impl Screen {
-    pub fn new(scale: u8) -> Self {
+    pub fn new() -> Self {
         Screen {
             frame_buffer: FrameBuffer::new(),
-            scale: scale as u16,
         }
     }
 
     pub fn width(&self) -> u16 {
-        SCREEN_W as u16 * self.scale
+        SCREEN_W as u16
     }
 
     pub fn height(&self) -> u16 {
-        SCREEN_H as u16 * self.scale
+        SCREEN_H as u16
     }
 
     pub fn refresh(&mut self, frame_buffer: &FrameBuffer) {
@@ -57,7 +55,6 @@ impl Screen {
         let mut array = Vec::with_capacity(4 * wxh as usize);
 
         for i in 0..wxh {
-            // TODO: Use scale value
             let x = i as u8 % SCREEN_W;
             let y = i as u8 / SCREEN_W;
             let pixel = self.frame_buffer.get_pixel(x, y);
