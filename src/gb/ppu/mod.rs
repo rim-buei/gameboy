@@ -3,7 +3,7 @@ mod register;
 use self::register::{LCDStatus, Register::*};
 use super::bus::Bus;
 use super::interrupt::{request as request_interrupt, Interrupt};
-use super::screen::SCREEN_H;
+use super::screen::{FrameBuffer, SCREEN_H};
 use std::fmt;
 
 const ONE_CYCLE: u16 = 456;
@@ -18,11 +18,17 @@ enum Mode {
 
 pub struct Ppu {
     state: State,
+    screen: FrameBuffer,
+    screen_buffer: FrameBuffer,
 }
 
 impl Ppu {
     pub fn new() -> Self {
-        Ppu { state: State::new() }
+        Ppu {
+            state: State::new(),
+            screen: FrameBuffer::new(),
+            screen_buffer: FrameBuffer::new(),
+        }
     }
 
     pub fn step<B: Bus>(&mut self, bus: &mut B, cycle: u8) {
@@ -41,6 +47,9 @@ impl Ppu {
             if next_line == SCREEN_H {
                 request_interrupt(bus, Interrupt::VBlank);
             } else if next_line > SCREEN_H + 9 {
+                self.screen = self.screen_buffer;
+                self.state.screen_prepared = true;
+
                 next_line = 0;
             }
             LY.write(bus, next_line);
@@ -98,6 +107,19 @@ impl Ppu {
         STAT.write(bus, status.raw());
     }
 
+    pub fn is_screen_prepared(&self) -> bool {
+        self.state.screen_prepared
+    }
+
+    pub fn transfer_screen(&mut self) -> FrameBuffer {
+        if !self.state.screen_prepared {
+            panic!("screen data is still not yet prepared")
+        }
+
+        self.state.screen_prepared = false;
+        self.screen
+    }
+
     fn render_scanline<B: Bus>(&mut self, bus: &mut B) {
         self.render_bg(bus);
         self.render_win(bus);
@@ -123,6 +145,7 @@ impl fmt::Debug for Ppu {
 pub struct State {
     clock: u16,
     line_drawn: bool,
+    screen_prepared: bool,
 
     lcd: LCDStatus, // For debugging
 }
@@ -132,6 +155,7 @@ impl State {
         State {
             clock: 0,
             line_drawn: false,
+            screen_prepared: false,
 
             lcd: LCDStatus::new(0),
         }
