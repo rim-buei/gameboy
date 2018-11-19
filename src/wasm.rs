@@ -12,7 +12,7 @@ use stdweb::web::html_element::CanvasElement;
 use stdweb::web::{document, set_timeout, CanvasRenderingContext2d};
 
 fn main() {
-    let mut screen = Rc::new(RefCell::new(Screen::new(1)));
+    let mut screen = Rc::new(RefCell::new(Screen::new()));
 
     stdweb::initialize();
 
