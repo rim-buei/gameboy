@@ -1,5 +1,5 @@
-pub const SCREEN_W: u16 = 160;
-pub const SCREEN_H: u16 = 144;
+pub const SCREEN_W: u8 = 160;
+pub const SCREEN_H: u8 = 144;
 const SCREEN_W_SZ: usize = SCREEN_W as usize;
 const SCREEN_H_SZ: usize = SCREEN_H as usize;
 
@@ -18,11 +18,11 @@ impl FrameBuffer {
         }
     }
 
-    pub fn get_pixel(&self, x: u16, y: u16) -> Pixel {
+    pub fn get_pixel(&self, x: u8, y: u8) -> Pixel {
         self.data[y as usize][x as usize]
     }
 
-    pub fn set_pixel(&mut self, x: u16, y: u16, pixel: Pixel) {
+    pub fn set_pixel(&mut self, x: u8, y: u8, pixel: Pixel) {
         self.data[y as usize][x as usize] = pixel;
     }
 }
@@ -41,11 +41,11 @@ impl Screen {
     }
 
     pub fn width(&self) -> u16 {
-        SCREEN_W * self.scale
+        SCREEN_W as u16 * self.scale
     }
 
     pub fn height(&self) -> u16 {
-        SCREEN_H * self.scale
+        SCREEN_H as u16 * self.scale
     }
 
     pub fn refresh(&mut self, frame_buffer: &FrameBuffer) {
@@ -58,8 +58,8 @@ impl Screen {
 
         for i in 0..wxh {
             // TODO: Use scale value
-            let x = i as u16 % SCREEN_W;
-            let y = i as u16 / SCREEN_W;
+            let x = i as u8 % SCREEN_W;
+            let y = i as u8 / SCREEN_W;
             let pixel = self.frame_buffer.get_pixel(x, y);
 
             array.push(pixel.0);
