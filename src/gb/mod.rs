@@ -1,6 +1,7 @@
 pub mod cpu;
 pub mod mmu;
 pub mod ppu;
+pub mod screen;
 
 mod bus;
 mod cartridge;
