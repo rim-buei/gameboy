@@ -3,9 +3,10 @@
 # Game Boy
 A Game Boy emulator written in Rust
 
+![image](https://user-images.githubusercontent.com/43806767/48777725-b82fbd80-ed16-11e8-8ab9-82351dfe0f8c.png)
+
 # Project Status
 - Still work in progress
-- Still at early-stage
 
 # Requirements
 - Rust
