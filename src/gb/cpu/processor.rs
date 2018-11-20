@@ -4,8 +4,8 @@ use super::oprand::{Condition, Data16, Immediate8, Register16 as R16, Register8 
 use super::state::{Flag, State};
 
 pub struct Processor<'a, B: Bus + 'a> {
-    pub state: &'a mut State,
-    pub bus: &'a mut B,
+    state: &'a mut State,
+    bus: &'a mut B,
 
     extra_cycle: u8,
 }
@@ -542,8 +542,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn undefined(&mut self, opcode: u8) -> &mut Self {
-        println!("Unsupported or unknown opcode specified: 0x{:02X}", opcode);
-        self
+        panic!("unsupported or unknown opcode specified: 0x{:02X}", opcode);
     }
 }
 
