@@ -38,20 +38,12 @@ impl Screen {
         }
     }
 
-    pub fn width(&self) -> u16 {
-        SCREEN_W as u16
-    }
-
-    pub fn height(&self) -> u16 {
-        SCREEN_H as u16
-    }
-
     pub fn refresh(&mut self, frame_buffer: &FrameBuffer) {
         self.frame_buffer = *frame_buffer;
     }
 
     pub fn dump(&self) -> Vec<u8> {
-        let wxh = self.width() * self.height();
+        let wxh = SCREEN_W as u16 * SCREEN_H as u16;
         let mut array: Vec<u8> = Vec::with_capacity(4 * wxh as usize);
 
         for i in 0..wxh {
