@@ -23,7 +23,6 @@ pub struct GameBoy {
 impl GameBoy {
     pub fn new() -> Self {
         let mut mmu = Mmu::new();
-        mmu.load(0, rom());
 
         GameBoy {
             cpu: Cpu::new(),
