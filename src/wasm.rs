@@ -9,8 +9,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use stdweb::traits::*;
 use stdweb::unstable::TryInto;
+use stdweb::web;
 use stdweb::web::html_element::CanvasElement;
-use stdweb::web::{document, set_timeout, CanvasRenderingContext2d};
+use stdweb::web::{document, CanvasRenderingContext2d};
 
 fn main() {
     stdweb::initialize();
@@ -30,21 +31,18 @@ fn main() {
 }
 
 fn async_render_loop(ctx: CanvasRenderingContext2d, gameboy: Rc<RefCell<GameBoy>>) {
-    set_timeout(
-        move || {
-            gameboy.borrow_mut().step();
-            let array = gameboy.borrow_mut().screen();
+    web::window().request_animation_frame(move |_| {
+        gameboy.borrow_mut().step();
+        let array = gameboy.borrow_mut().screen();
 
-            js! {
-                @{&ctx}.putImageData(new ImageData(
-                    Uint8ClampedArray.from(@{array}),
-                    @{SCREEN_W},
-                    @{SCREEN_H},
-                ), 0, 0);
-            }
+        js! {
+            @{&ctx}.putImageData(new ImageData(
+                Uint8ClampedArray.from(@{array}),
+                @{SCREEN_W},
+                @{SCREEN_H},
+            ), 0, 0);
+        }
 
-            async_render_loop(ctx, gameboy);
-        },
-        1000 / 120, // FIXME
-    );
+        async_render_loop(ctx, gameboy);
+    });
 }
