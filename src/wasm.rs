@@ -3,7 +3,8 @@ extern crate stdweb;
 
 mod gb;
 
-use self::gb::screen::Screen;
+use self::gb::screen::{SCREEN_H, SCREEN_W};
+use self::gb::GameBoy;
 use std::cell::RefCell;
 use std::rc::Rc;
 use stdweb::traits::*;
@@ -14,8 +15,6 @@ use stdweb::web::{document, set_timeout, CanvasRenderingContext2d};
 fn main() {
     stdweb::initialize();
 
-    let screen = Rc::new(RefCell::new(Screen::new()));
-
     let canvas: CanvasElement = document()
         .query_selector("canvas")
         .unwrap()
@@ -24,26 +23,28 @@ fn main() {
         .unwrap();
     let ctx: CanvasRenderingContext2d = canvas.get_context().unwrap();
 
-    async_render_loop(ctx, screen.clone());
+    let gameboy = Rc::new(RefCell::new(GameBoy::new()));
+    async_render_loop(ctx, gameboy.clone());
 
     stdweb::event_loop();
 }
 
-fn async_render_loop(ctx: CanvasRenderingContext2d, screen: Rc<RefCell<Screen>>) {
+fn async_render_loop(ctx: CanvasRenderingContext2d, gameboy: Rc<RefCell<GameBoy>>) {
     set_timeout(
         move || {
-            let array = screen.borrow().dump();
+            gameboy.borrow_mut().step();
+            let array = gameboy.borrow_mut().screen();
 
             js! {
                 @{&ctx}.putImageData(new ImageData(
                     Uint8ClampedArray.from(@{array}),
-                    @{screen.borrow().width()},
-                    @{screen.borrow().height()},
+                    @{SCREEN_W},
+                    @{SCREEN_H},
                 ), 0, 0);
             }
 
-            async_render_loop(ctx, screen);
+            async_render_loop(ctx, gameboy);
         },
-        1000 / 60, // 60 FPS
+        1000 / 120, // FIXME
     );
 }
