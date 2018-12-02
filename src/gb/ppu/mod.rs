@@ -4,7 +4,7 @@ mod renderer;
 use self::register::{LCDControl, LCDStatus, Register::*};
 use self::renderer::Renderer;
 use super::bus::Bus;
-use super::interrupt::{request as request_interrupt, Interrupt};
+use super::interrupt::{self, Interrupt};
 use super::screen::{FrameBuffer, SCREEN_H};
 use std::fmt;
 
@@ -52,7 +52,7 @@ impl Ppu {
         {
             let mut next_line = LY.read(bus) + 1;
             if next_line == SCREEN_H {
-                request_interrupt(bus, Interrupt::VBlank);
+                interrupt::request(bus, Interrupt::VBlank);
             } else if next_line > SCREEN_H + 9 {
                 self.screen = self.screen_buffer;
                 self.state.screen_prepared = true;
@@ -128,14 +128,14 @@ impl Ppu {
         };
 
         if interrupt && status.mode() != cur_mode {
-            request_interrupt(bus, Interrupt::LCDStat);
+            interrupt::request(bus, Interrupt::LCDStat);
         }
 
         if cur_line == LYC.read(bus) {
             status.set_lyc_coincidence(true);
 
             if status.lyc_coincidence_interrupt_enabled() {
-                request_interrupt(bus, Interrupt::LCDStat);
+                interrupt::request(bus, Interrupt::LCDStat);
             }
         } else {
             status.set_lyc_coincidence(false);
