@@ -7,7 +7,7 @@ mod state;
 use self::instruction::{exec, exec_prefix_cb, interrupt};
 use self::state::State;
 use super::bus::Bus;
-use super::interrupt::{receive as receive_interrupt, Interrupt};
+use super::interrupt::{self, Interrupt};
 use std::fmt;
 
 pub struct Cpu {
@@ -20,10 +20,15 @@ impl Cpu {
     }
 
     pub fn step<B: Bus>(&mut self, bus: &mut B) -> u8 {
+        self.process_halt(bus);
         self.process_interrupt(bus) + self.process_instruction(bus)
     }
 
     fn process_instruction<B: Bus>(&mut self, bus: &mut B) -> u8 {
+        if self.state.halted {
+            return 4;
+        }
+
         let addr = self.state.PC;
         let opcode = bus.read8(addr);
 
@@ -42,13 +47,23 @@ impl Cpu {
         cycles
     }
 
+    fn process_halt<B: Bus>(&mut self, bus: &mut B) {
+        if !self.state.halted {
+            return;
+        }
+
+        if self.state.interrupts_before_halt != interrupt::dump_raw_flags(bus) {
+            self.state.halted = false;
+        }
+    }
+
     fn process_interrupt<B: Bus>(&mut self, bus: &mut B) -> u8 {
         if !self.state.IME {
             return 0;
         }
         self.state.IME = false;
 
-        let pc = match receive_interrupt(bus) {
+        let pc = match interrupt::receive(bus) {
             Interrupt::VBlank => 0x40,
             Interrupt::LCDStat => 0x48,
             Interrupt::Timer => 0x50,

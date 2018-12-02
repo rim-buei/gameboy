@@ -1,4 +1,5 @@
 use super::super::bus::Bus;
+use super::super::interrupt;
 use super::io::{Reader16, Reader8, Writer16, Writer8};
 use super::oprand::{Condition, Data16, Immediate8, Register16 as R16, Register8 as R8};
 use super::state::{Flag, State};
@@ -24,6 +25,12 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
         let cycle = base_cycle + self.extra_cycle;
         self.extra_cycle = 0;
         (opsize, cycle)
+    }
+
+    pub fn halt(&mut self) -> &mut Self {
+        self.state.interrupts_before_halt = interrupt::dump_raw_flags(self.bus);
+        self.state.halted = true;
+        self
     }
 
     pub fn ld8<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {

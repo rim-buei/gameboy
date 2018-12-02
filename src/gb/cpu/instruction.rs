@@ -125,7 +125,7 @@ pub fn exec<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
         0x73 => p.ld8(Address::HL, R8::E).r(1, 8),           // [LD (HL),E] [1  8] [- - - -]
         0x74 => p.ld8(Address::HL, R8::H).r(1, 8),           // [LD (HL),H] [1  8] [- - - -]
         0x75 => p.ld8(Address::HL, R8::L).r(1, 8),           // [LD (HL),L] [1  8] [- - - -]
-        0x76 => p.undefined(opcode).r(0, 0),                 // TODO: [HALT] [1  4] [- - - -]
+        0x76 => p.halt().r(1, 4),                            // [HALT] [1  4] [- - - -]
         0x77 => p.ld8(Address::HL, R8::A).r(1, 8),           // [LD (HL),A] [1  8] [- - - -]
         0x78 => p.ld8(R8::A, R8::B).r(1, 4),                 // [LD A,B] [1  4] [- - - -]
         0x79 => p.ld8(R8::A, R8::C).r(1, 4),                 // [LD A,C] [1  4] [- - - -]
