@@ -74,6 +74,20 @@ impl Cpu {
         };
         interrupt(pc, &mut self.state, bus)
     }
+
+    pub fn simulate_bootloader(&mut self) {
+        self.state = State::new();
+        self.state.A = 0x01;
+        self.state.F = 0xB0;
+        self.state.B = 0x00;
+        self.state.C = 0x13;
+        self.state.D = 0x00;
+        self.state.E = 0xD8;
+        self.state.H = 0x01;
+        self.state.L = 0x4D;
+        self.state.PC = 0x0100;
+        self.state.SP = 0xFFFE;
+    }
 }
 
 impl fmt::Debug for Cpu {
