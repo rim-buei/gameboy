@@ -11,7 +11,7 @@ use std::fmt;
 const ONE_CYCLE: u16 = 456;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum Mode {
+pub enum Mode {
     HBlank,   // Mode 0
     VBlank,   // Mode 1
     OAMRead,  // Mode 2

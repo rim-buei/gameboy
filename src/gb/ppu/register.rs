@@ -125,7 +125,7 @@ impl LCDStatus {
             1 => Mode::VBlank,
             2 => Mode::OAMRead,
             3 => Mode::VRAMRead,
-            _ => panic!("unreachable"),
+            _ => unreachable!(),
         }
     }
 
