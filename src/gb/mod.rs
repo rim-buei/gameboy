@@ -36,9 +36,9 @@ impl GameBoy {
     }
 
     pub fn load(&mut self, cart: Cartridge) {
-        self.cpu = Cpu::new();
+        self.cpu.simulate_bootloader();
         self.ppu = Ppu::new();
-        self.mmu = Mmu::new();
+        self.mmu.simulate_bootloader();
         self.mmu.load(0, cart.read());
     }
 
