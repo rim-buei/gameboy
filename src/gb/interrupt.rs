@@ -59,6 +59,10 @@ pub fn receive<B: Bus>(bus: &mut B) -> Interrupt {
     }
 }
 
+pub fn dump_raw_flags<B: Bus>(bus: &mut B) -> u8 {
+    bus.read8(IF_REG_ADDR)
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::mmu::Mmu;
