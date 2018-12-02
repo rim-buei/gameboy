@@ -190,7 +190,6 @@ pub enum Condition {
     C,  // Carry flag is enabled
 
     T, // True
-    F, // False
 }
 
 impl Condition {
@@ -204,7 +203,6 @@ impl Condition {
             C => state.get_flag(Flag::C),
 
             T => true,
-            F => false,
         }
     }
 }
