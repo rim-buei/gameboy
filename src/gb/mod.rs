@@ -1,13 +1,14 @@
+pub mod cartridge;
 pub mod cpu;
 pub mod mmu;
 pub mod ppu;
 pub mod screen;
 
 mod bus;
-mod cartridge;
 mod interrupt;
 mod ram;
 
+use self::cartridge::Cartridge;
 use self::cpu::Cpu;
 use self::mmu::Mmu;
 use self::ppu::Ppu;
@@ -18,21 +19,34 @@ pub struct GameBoy {
     ppu: Ppu,
     mmu: Mmu,
     screen: Screen,
+
+    paused: bool,
 }
 
 impl GameBoy {
     pub fn new() -> Self {
-        let mut mmu = Mmu::new();
-
         GameBoy {
             cpu: Cpu::new(),
             ppu: Ppu::new(),
-            mmu: mmu,
+            mmu: Mmu::new(),
             screen: Screen::new(),
+
+            paused: true,
         }
     }
 
-    pub fn step(&mut self) {
+    pub fn load(&mut self, cart: Cartridge) {
+        self.cpu = Cpu::new();
+        self.ppu = Ppu::new();
+        self.mmu = Mmu::new();
+        self.mmu.load(0, cart.read());
+    }
+
+    pub fn step(&mut self) -> Vec<u8> {
+        if self.paused {
+            return self.screen.dump();
+        }
+
         loop {
             let cycle = self.cpu.step(&mut self.mmu);
             self.ppu.step(&mut self.mmu, cycle);
@@ -40,10 +54,16 @@ impl GameBoy {
                 break;
             }
         }
-    }
 
-    pub fn screen(&mut self) -> Vec<u8> {
         self.screen.refresh(&self.ppu.transfer_screen());
         self.screen.dump()
+    }
+
+    pub fn pause(&mut self) {
+        self.paused = true;
+    }
+
+    pub fn unpause(&mut self) {
+        self.paused = false;
     }
 }
