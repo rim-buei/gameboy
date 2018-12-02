@@ -62,7 +62,12 @@ impl Mmu {
 
 impl Bus for Mmu {
     fn read8(&self, addr: u16) -> u8 {
-        self.array.read8(addr)
+        match addr {
+            // Mirror of 0xC000...0xDDFF (Typically not used)
+            0xE000...0xFDFF => self.array.read8(addr - 0x2000),
+
+            _ => self.array.read8(addr),
+        }
     }
 
     fn read16(&self, addr: u16) -> u16 {
