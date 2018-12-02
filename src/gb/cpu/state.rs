@@ -17,6 +17,9 @@ pub struct State {
 
     // Interrupt master enable flag
     pub IME: bool,
+
+    pub halted: bool,
+    pub interrupts_before_halt: u8,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -45,6 +48,9 @@ impl State {
             SP: 0x0000,
 
             IME: false,
+
+            halted: false,
+            interrupts_before_halt: 0x00,
         }
     }
 
