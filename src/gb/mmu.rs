@@ -70,6 +70,9 @@ impl Mmu {
 impl Bus for Mmu {
     fn read8(&self, addr: u16) -> u8 {
         match addr {
+            0x0000...0x7FFF => self.cart.read(addr),
+            0xA000...0xBFFF => self.cart.read(addr),
+
             // Mirror of 0xC000...0xDDFF (Typically not used)
             0xE000...0xFDFF => self.array.read8(addr - 0x2000),
 
@@ -78,14 +81,23 @@ impl Bus for Mmu {
     }
 
     fn read16(&self, addr: u16) -> u16 {
-        self.array.read16(addr)
+        self.read8(addr) as u16 | (self.read8(addr.wrapping_add(1)) as u16) << 8
     }
 
     fn write8(&mut self, addr: u16, data: u8) {
-        self.array.write8(addr, data);
+        match addr {
+            0x0000...0x7FFF => self.cart.write(addr, data),
+            0xA000...0xBFFF => self.cart.write(addr, data),
+
+            // Mirror of 0xC000...0xDDFF (Typically not used)
+            0xE000...0xFDFF => self.array.write8(addr - 0x2000, data),
+
+            _ => self.array.write8(addr, data),
+        };
     }
 
     fn write16(&mut self, addr: u16, data: u16) {
-        self.array.write16(addr, data);
+        self.write8(addr, (data & 0xFF) as u8);
+        self.write8(addr.wrapping_add(1), (data >> 8) as u8);
     }
 }
