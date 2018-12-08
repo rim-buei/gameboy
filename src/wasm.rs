@@ -16,12 +16,9 @@ use stdweb::web::html_element::{CanvasElement, InputElement};
 use stdweb::web::{document, CanvasRenderingContext2d, FileList, FileReader, FileReaderResult};
 
 macro_rules! enclose {
-    ( [$( $x:ident ),*] $y:expr ) => {
-        {
-            $(let $x = $x.clone();)*
-                $y
-        }
-    };
+    ([$($x: ident), *] $y: expr) => {
+        {$(let $x = $x.clone();)* $y}
+    }
 }
 
 fn main() {
