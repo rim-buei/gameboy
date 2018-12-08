@@ -1,14 +1,17 @@
 use super::bus::Bus;
+use super::cartridge::Cartridge;
 use super::ram::Ram;
 
 pub struct Mmu {
     array: Ram,
+    cart: Cartridge,
 }
 
 impl Mmu {
     pub fn new() -> Self {
         Mmu {
             array: Ram::new(vec![0x00; 1 << 16]),
+            cart: Cartridge::new(vec![0x00; 1 << 15]),
         }
     }
 
@@ -16,6 +19,10 @@ impl Mmu {
         for (i, byte) in data.iter().enumerate() {
             self.write8(offset.wrapping_add(i as u16), *byte);
         }
+    }
+
+    pub fn load_cartridge(&mut self, cart: Cartridge) {
+        self.cart = cart;
     }
 
     pub fn dump(&self) -> Vec<u8> {
