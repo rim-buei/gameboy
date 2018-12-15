@@ -8,6 +8,7 @@ pub struct Processor<'a, B: Bus + 'a> {
     state: &'a mut State,
     bus: &'a mut B,
 
+    extra_opsize: u8,
     extra_cycle: u8,
 }
 
@@ -17,12 +18,15 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
             state: state,
             bus: bus,
 
+            extra_opsize: 0,
             extra_cycle: 0,
         }
     }
 
-    pub fn r(&mut self, opsize: u8, base_cycle: u8) -> (u8, u8) {
+    pub fn r(&mut self, base_opsize: u8, base_cycle: u8) -> (u8, u8) {
+        let opsize = base_opsize + self.extra_opsize;
         let cycle = base_cycle + self.extra_cycle;
+        self.extra_opsize = 0;
         self.extra_cycle = 0;
         (opsize, cycle)
     }
@@ -456,6 +460,8 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
             self.state.PC = addr;
 
             self.extra_cycle += 4;
+        } else {
+            self.extra_opsize += 3;
         }
         self
     }
@@ -1181,7 +1187,7 @@ mod tests {
         let mut p = Processor::new(&mut state, &mut ram);
         p.jp(Condition::F, Immediate16);
         assert_eq!(0x0000, p.state.PC);
-        assert_eq!((0, 0), p.r(0, 0));
+        assert_eq!((3, 0), p.r(0, 0));
         p.jp(Condition::T, Immediate16);
         assert_eq!(0xCDAB, p.state.PC);
         assert_eq!((0, 4), p.r(0, 0));
