@@ -80,7 +80,7 @@ impl Writer16 for Register16 {
         match *self {
             AF => {
                 state.A = (v >> 8) as u8;
-                state.F = (v & 0xFF) as u8;
+                state.F = (v & 0xF0) as u8;
             }
             BC => {
                 state.B = (v >> 8) as u8;
@@ -213,7 +213,18 @@ impl Condition {
 mod tests {
     use super::super::super::ram::Ram;
 
-    use super::*;
+    use super::{Register16 as R16, *};
+
+    #[test]
+    fn test_register16() {
+        let mut state = State::new();
+        let mut ram = Ram::new(vec![0x00]);
+
+        R16::AF.write16(&mut state, &mut ram, 0xFFFF);
+        R16::BC.write16(&mut state, &mut ram, 0xFFFF);
+        assert_eq!(0xFFF0, R16::AF.read16(&mut state, &mut ram));
+        assert_eq!(0xFFFF, R16::BC.read16(&mut state, &mut ram));
+    }
 
     #[test]
     fn test_address_get() {
@@ -222,6 +233,6 @@ mod tests {
         state.C = 0xBB;
 
         assert_eq!(0xFFAA, Address::FF00.get(&mut state, &mut ram));
-        assert_eq!(0xFFBB, Address::FF00C.get(&mut state, &mut ram))
+        assert_eq!(0xFFBB, Address::FF00C.get(&mut state, &mut ram));
     }
 }
