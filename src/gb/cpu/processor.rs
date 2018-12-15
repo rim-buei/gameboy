@@ -468,24 +468,28 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
     pub fn jr<R: Reader8>(&mut self, cond: Condition, r: R) -> &mut Self {
         if cond.test(self.state) {
+            // PC + opcode (1-byte) + oprand (1-byte)
+            let next_addr = self.state.PC.wrapping_add(2);
+
             let offset = r.read8(self.state, self.bus) as i8;
             if 0 < offset {
-                self.state.PC = self.state.PC.wrapping_add(offset as u16);
+                self.state.PC = next_addr.wrapping_add(offset as u16);
             } else {
-                self.state.PC = self.state.PC.wrapping_sub(offset.abs() as u16);
+                self.state.PC = next_addr.wrapping_sub(offset.abs() as u16);
             }
 
             self.extra_cycle += 4;
+        } else {
+            self.extra_opsize += 2;
         }
         self
     }
 
     pub fn call<R: Reader16>(&mut self, cond: Condition, r: R) -> &mut Self {
-        // PC + opcode (1-byte) + oprand (2-byte)
-        let next_addr = self.state.PC.wrapping_add(3);
-
         if cond.test(self.state) {
             // Push next instruction onto stack
+            // PC + opcode (1-byte) + oprand (2-byte)
+            let next_addr = self.state.PC.wrapping_add(3);
             self.push16(Data16(next_addr));
 
             let addr = r.read16(self.state, self.bus);
@@ -493,7 +497,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
             self.extra_cycle += 12;
         } else {
-            self.state.PC = next_addr;
+            self.extra_opsize += 3;
         }
         self
     }
@@ -504,7 +508,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
             self.extra_cycle += 12;
         } else {
-            self.state.PC = self.state.PC.wrapping_add(1);
+            self.extra_opsize += 1;
         }
         self
     }
@@ -515,7 +519,10 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn rst(&mut self, addr: u16) -> &mut Self {
-        self.push16(R16::PC);
+        // Push next instruction onto stack
+        let next_addr = self.state.PC.wrapping_add(1);
+        self.push16(Data16(next_addr));
+
         self.state.PC = addr;
         self
     }
