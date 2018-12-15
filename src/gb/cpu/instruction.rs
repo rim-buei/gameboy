@@ -23,7 +23,7 @@ pub fn exec<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
         0x0D => p.dec8(R8::C).r(1, 4),                       // [DEC C] [1  4] [Z 1 H -]
         0x0E => p.ld8(R8::C, Immediate8).r(2, 8),            // [LD C,d8] [2  8] [- - - -]
         0x0F => p.rrca().r(1, 4),                            // [RRCA] [1  4] [0 0 0 C]
-        0x10 => p.undefined(opcode).r(0, 0),                 // TODO: [STOP 0] [2  4] [- - - -]
+        0x10 => p.stop().r(2, 4),                            // [STOP 0] [2  4] [- - - -]
         0x11 => p.ld16(R16::DE, Immediate16).r(3, 12),       // [LD DE,d16] [3  12] [- - - -]
         0x12 => p.ld8(Address::DE, R8::A).r(1, 8),           // [LD (DE),A] [1  8] [- - - -]
         0x13 => p.inc16(R16::DE).r(1, 8),                    // [INC DE] [1  8] [- - - -]

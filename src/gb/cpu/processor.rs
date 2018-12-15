@@ -37,6 +37,11 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
         self
     }
 
+    pub fn stop(&mut self) -> &mut Self {
+        // TODO: Implementation
+        self
+    }
+
     pub fn ld8<R: Reader8, W: Writer8>(&mut self, lhs: W, rhs: R) -> &mut Self {
         let v = rhs.read8(self.state, self.bus);
         lhs.write8(self.state, self.bus, v);
