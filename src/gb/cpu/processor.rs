@@ -1208,12 +1208,12 @@ mod tests {
     #[test]
     fn test_processor_jr() {
         let mut state = State::new();
-        let mut ram = Ram::new(vec![0x00, 0xFF /* -1 */]);
+        let mut ram = Ram::new(vec![0x00, 0x01]);
         state.PC = 0x0000;
 
         let mut p = Processor::new(&mut state, &mut ram);
         p.jr(Condition::T, Immediate8);
-        assert_eq!(0xFFFF, p.state.PC);
+        assert_eq!(0x0003, p.state.PC);
         assert_eq!((0, 4), p.r(0, 0));
     }
 
