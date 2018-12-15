@@ -521,12 +521,12 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn ei(&mut self) -> &mut Self {
-        self.state.IME = true;
+        self.state.interrupting = true;
         self
     }
 
     pub fn di(&mut self) -> &mut Self {
-        self.state.IME = false;
+        self.state.interrupted = false;
         self
     }
 

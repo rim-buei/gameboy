@@ -58,10 +58,15 @@ impl Cpu {
     }
 
     fn process_interrupt<B: Bus>(&mut self, bus: &mut B) -> u8 {
-        if !self.state.IME {
+        if self.state.interrupting {
+            self.state.interrupting = false;
+            self.state.interrupted = true;
             return 0;
         }
-        self.state.IME = false;
+
+        if !(self.state.interrupted || self.state.halted) {
+            return 0;
+        }
 
         let pc = match interrupt::receive(bus) {
             Interrupt::VBlank => 0x40,
