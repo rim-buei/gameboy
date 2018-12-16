@@ -65,6 +65,13 @@ impl Mmu {
 
         self.array.write8(0xFF50, 0x01);
     }
+
+    fn dma_transfer(&mut self, value: u8) {
+        let start_addr = (value as u16) * 0x100;
+        for i in 0..0xA0 {
+            self.array.write8(0xFE00 + i, self.array.read8(start_addr + i));
+        }
+    }
 }
 
 impl Bus for Mmu {
@@ -91,6 +98,8 @@ impl Bus for Mmu {
 
             // Mirror of 0xC000...0xDDFF (Typically not used)
             0xE000...0xFDFF => self.array.write8(addr - 0x2000, data),
+
+            0xFF46 => self.dma_transfer(data),
 
             _ => self.array.write8(addr, data),
         };
