@@ -252,39 +252,32 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn daa(&mut self) -> &mut Self {
-        let a = self.state.A;
+        let mut a = self.state.A as u16;
 
-        let mut b = 0x00;
-        if self.state.get_flag(Flag::Z) {
+        if self.state.get_flag(Flag::N) {
             if self.state.get_flag(Flag::H) {
-                b |= 0x06;
+                a = (a - 0x06) & 0xFF;
             }
             if self.state.get_flag(Flag::C) {
-                b |= 0x60;
+                a = (a - 0x60) & 0xFF;
             }
         } else {
             if self.state.get_flag(Flag::H) || (a & 0x0F) > 0x09 {
-                b |= 0x06;
+                a += 0x06;
             }
-            if self.state.get_flag(Flag::C) || (a & 0xFF) > 0x99 {
-                b |= 0x60;
+            if self.state.get_flag(Flag::C) || a > 0x9F {
+                a += 0x60;
             }
         }
 
-        let c = if self.state.get_flag(Flag::N) {
-            a.wrapping_sub(b)
-        } else {
-            a.wrapping_add(b)
-        };
-
-        self.state.set_flag(Flag::Z, c == 0);
+        self.state.set_flag(Flag::Z, (a & 0xFF) == 0);
         self.state.disable_flag(Flag::H);
 
-        if ((b as u16) << 2) & 0x100 != 0 {
+        if a > 0xFF {
             self.state.enable_flag(Flag::C);
         }
 
-        self.state.A = c;
+        self.state.A = a as u8;
         self
     }
 
