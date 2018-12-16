@@ -1,3 +1,5 @@
+use super::MemoryBankController;
+
 enum Mode {
     Rom,
     Ram,
@@ -25,8 +27,10 @@ impl Mbc1 {
             ram_enabled: false,
         }
     }
+}
 
-    pub fn read(&self, addr: u16) -> u8 {
+impl MemoryBankController for Mbc1 {
+    fn read(&self, addr: u16) -> u8 {
         let addr = addr as usize;
         match addr {
             0x0000...0x3FFF => self.rom[addr],
@@ -42,7 +46,7 @@ impl Mbc1 {
         }
     }
 
-    pub fn write(&mut self, addr: u16, data: u8) {
+    fn write(&mut self, addr: u16, data: u8) {
         let addr = addr as usize;
         match addr {
             0x0000...0x1FFF => match data & 0x0F {
