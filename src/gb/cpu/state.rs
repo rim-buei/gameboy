@@ -15,8 +15,8 @@ pub struct State {
     pub SP: u16,
     pub PC: u16,
 
-    // Interrupt master enable flag
-    pub IME: bool,
+    pub interrupting: bool,
+    pub interrupted: bool,
 
     pub halted: bool,
     pub interrupts_before_halt: u8,
@@ -28,8 +28,6 @@ pub enum Flag {
     N, // Subtract
     H, // Half Carry
     C, // Carry
-
-    IME, // Interrupt Master Enable
 }
 
 impl State {
@@ -47,7 +45,8 @@ impl State {
             PC: 0x0000,
             SP: 0x0000,
 
-            IME: false,
+            interrupting: false,
+            interrupted: false,
 
             halted: false,
             interrupts_before_halt: 0x00,
@@ -60,8 +59,6 @@ impl State {
             Flag::N => self.F |= 1 << 6,
             Flag::H => self.F |= 1 << 5,
             Flag::C => self.F |= 1 << 4,
-
-            Flag::IME => self.IME = true,
         }
         self
     }
@@ -72,8 +69,6 @@ impl State {
             Flag::N => self.F &= !(1 << 6),
             Flag::H => self.F &= !(1 << 5),
             Flag::C => self.F &= !(1 << 4),
-
-            Flag::IME => self.IME = false,
         }
         self
     }
@@ -84,8 +79,6 @@ impl State {
             Flag::N => (self.F & (1 << 6)) != 0,
             Flag::H => (self.F & (1 << 5)) != 0,
             Flag::C => (self.F & (1 << 4)) != 0,
-
-            Flag::IME => self.IME,
         }
     }
 

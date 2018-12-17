@@ -8,6 +8,7 @@ pub struct Processor<'a, B: Bus + 'a> {
     state: &'a mut State,
     bus: &'a mut B,
 
+    extra_opsize: u8,
     extra_cycle: u8,
 }
 
@@ -17,12 +18,15 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
             state: state,
             bus: bus,
 
+            extra_opsize: 0,
             extra_cycle: 0,
         }
     }
 
-    pub fn r(&mut self, opsize: u8, base_cycle: u8) -> (u8, u8) {
+    pub fn r(&mut self, base_opsize: u8, base_cycle: u8) -> (u8, u8) {
+        let opsize = base_opsize + self.extra_opsize;
         let cycle = base_cycle + self.extra_cycle;
+        self.extra_opsize = 0;
         self.extra_cycle = 0;
         (opsize, cycle)
     }
@@ -30,6 +34,11 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     pub fn halt(&mut self) -> &mut Self {
         self.state.interrupts_before_halt = interrupt::dump_raw_flags(self.bus);
         self.state.halted = true;
+        self
+    }
+
+    pub fn stop(&mut self) -> &mut Self {
+        // TODO: Implementation
         self
     }
 
@@ -243,39 +252,32 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn daa(&mut self) -> &mut Self {
-        let a = self.state.A;
+        let mut a = self.state.A as u16;
 
-        let mut b = 0x00;
-        if self.state.get_flag(Flag::Z) {
+        if self.state.get_flag(Flag::N) {
             if self.state.get_flag(Flag::H) {
-                b |= 0x06;
+                a = (a - 0x06) & 0xFF;
             }
             if self.state.get_flag(Flag::C) {
-                b |= 0x60;
+                a = (a - 0x60) & 0xFF;
             }
         } else {
             if self.state.get_flag(Flag::H) || (a & 0x0F) > 0x09 {
-                b |= 0x06;
+                a += 0x06;
             }
-            if self.state.get_flag(Flag::C) || (a & 0xFF) > 0x99 {
-                b |= 0x60;
+            if self.state.get_flag(Flag::C) || a > 0x9F {
+                a += 0x60;
             }
         }
 
-        let c = if self.state.get_flag(Flag::N) {
-            a.wrapping_sub(b)
-        } else {
-            a.wrapping_add(b)
-        };
-
-        self.state.set_flag(Flag::Z, c == 0);
+        self.state.set_flag(Flag::Z, (a & 0xFF) == 0);
         self.state.disable_flag(Flag::H);
 
-        if ((b as u16) << 2) & 0x100 != 0 {
+        if a > 0xFF {
             self.state.enable_flag(Flag::C);
         }
 
-        self.state.A = c;
+        self.state.A = a as u8;
         self
     }
 
@@ -456,30 +458,36 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
             self.state.PC = addr;
 
             self.extra_cycle += 4;
+        } else {
+            self.extra_opsize += 3;
         }
         self
     }
 
     pub fn jr<R: Reader8>(&mut self, cond: Condition, r: R) -> &mut Self {
         if cond.test(self.state) {
+            // PC + opcode (1-byte) + oprand (1-byte)
+            let next_addr = self.state.PC.wrapping_add(2);
+
             let offset = r.read8(self.state, self.bus) as i8;
             if 0 < offset {
-                self.state.PC = self.state.PC.wrapping_add(offset as u16);
+                self.state.PC = next_addr.wrapping_add(offset as u16);
             } else {
-                self.state.PC = self.state.PC.wrapping_sub(offset.abs() as u16);
+                self.state.PC = next_addr.wrapping_sub(offset.abs() as u16);
             }
 
             self.extra_cycle += 4;
+        } else {
+            self.extra_opsize += 2;
         }
         self
     }
 
     pub fn call<R: Reader16>(&mut self, cond: Condition, r: R) -> &mut Self {
-        // PC + opcode (1-byte) + oprand (2-byte)
-        let next_addr = self.state.PC.wrapping_add(3);
-
         if cond.test(self.state) {
             // Push next instruction onto stack
+            // PC + opcode (1-byte) + oprand (2-byte)
+            let next_addr = self.state.PC.wrapping_add(3);
             self.push16(Data16(next_addr));
 
             let addr = r.read16(self.state, self.bus);
@@ -487,7 +495,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
             self.extra_cycle += 12;
         } else {
-            self.state.PC = next_addr;
+            self.extra_opsize += 3;
         }
         self
     }
@@ -498,7 +506,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
             self.extra_cycle += 12;
         } else {
-            self.state.PC = self.state.PC.wrapping_add(1);
+            self.extra_opsize += 1;
         }
         self
     }
@@ -509,18 +517,21 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
     }
 
     pub fn rst(&mut self, addr: u16) -> &mut Self {
-        self.push16(R16::PC);
+        // Push next instruction onto stack
+        let next_addr = self.state.PC.wrapping_add(1);
+        self.push16(Data16(next_addr));
+
         self.state.PC = addr;
         self
     }
 
     pub fn ei(&mut self) -> &mut Self {
-        self.state.IME = true;
+        self.state.interrupting = true;
         self
     }
 
     pub fn di(&mut self) -> &mut Self {
-        self.state.IME = false;
+        self.state.interrupted = false;
         self
     }
 
@@ -1181,7 +1192,7 @@ mod tests {
         let mut p = Processor::new(&mut state, &mut ram);
         p.jp(Condition::F, Immediate16);
         assert_eq!(0x0000, p.state.PC);
-        assert_eq!((0, 0), p.r(0, 0));
+        assert_eq!((3, 0), p.r(0, 0));
         p.jp(Condition::T, Immediate16);
         assert_eq!(0xCDAB, p.state.PC);
         assert_eq!((0, 4), p.r(0, 0));
@@ -1190,12 +1201,12 @@ mod tests {
     #[test]
     fn test_processor_jr() {
         let mut state = State::new();
-        let mut ram = Ram::new(vec![0x00, 0xFF /* -1 */]);
+        let mut ram = Ram::new(vec![0x00, 0x01]);
         state.PC = 0x0000;
 
         let mut p = Processor::new(&mut state, &mut ram);
         p.jr(Condition::T, Immediate8);
-        assert_eq!(0xFFFF, p.state.PC);
+        assert_eq!(0x0003, p.state.PC);
         assert_eq!((0, 4), p.r(0, 0));
     }
 

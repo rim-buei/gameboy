@@ -39,7 +39,7 @@ impl GameBoy {
         self.cpu.simulate_bootloader();
         self.ppu = Ppu::new();
         self.mmu.simulate_bootloader();
-        self.mmu.load(0, cart.read());
+        self.mmu.load_cartridge(cart);
     }
 
     pub fn step(&mut self) -> Vec<u8> {
