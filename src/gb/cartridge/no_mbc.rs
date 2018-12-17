@@ -28,7 +28,7 @@ impl MemoryBankController for NoMbc {
         let addr = addr as usize;
         match addr {
             0xA000...0xBFFF => self.ram[addr - 0xA000] = data,
-            _ => panic!("inaccessible address"),
+            _ => { /* TODO: Consider if this case should be error */ }
         };
     }
 }
