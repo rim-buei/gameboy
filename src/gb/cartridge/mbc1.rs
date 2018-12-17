@@ -1,8 +1,8 @@
 use super::MemoryBankController;
 
-enum Mode {
-    Rom,
-    Ram,
+enum MemoryModel {
+    Model0,
+    Model1,
 }
 
 pub struct Mbc1 {
@@ -11,7 +11,7 @@ pub struct Mbc1 {
     ram: Vec<u8>,
     ram_bank: usize,
 
-    mode: Mode,
+    memory_model: MemoryModel,
     ram_enabled: bool,
 }
 
@@ -23,7 +23,7 @@ impl Mbc1 {
             ram: vec![0x00; 0x8000],
             ram_bank: 0,
 
-            mode: Mode::Rom,
+            memory_model: MemoryModel::Model0,
             ram_enabled: false,
         }
     }
@@ -58,16 +58,16 @@ impl MemoryBankController for Mbc1 {
                 self.rom_bank = (data & 0x1F) as usize | (self.rom_bank & 0xE0);
                 self.rom_bank = increment_rom_bank(self.rom_bank);
             }
-            0x4000...0x5FFF => match self.mode {
-                Mode::Rom => {
+            0x4000...0x5FFF => match self.memory_model {
+                MemoryModel::Model0 => {
                     self.rom_bank = ((data & 0x03) << 5) as usize | (self.rom_bank & 0x1F);
                     self.rom_bank = increment_rom_bank(self.rom_bank);
                 }
-                Mode::Ram => self.ram_bank = (data & 0x03) as usize,
+                MemoryModel::Model1 => self.ram_bank = (data & 0x03) as usize,
             },
             0x6000...0x7FFF => match data & 0x01 {
-                0x00 => self.mode = Mode::Rom,
-                0x01 => self.mode = Mode::Ram,
+                0x00 => self.memory_model = MemoryModel::Model0,
+                0x01 => self.memory_model = MemoryModel::Model1,
                 _ => unreachable!(),
             },
             0xA000...0xBFFF => {
