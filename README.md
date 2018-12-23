@@ -33,3 +33,8 @@ $ cargo web start --bin wasm --target wasm32-unknown-unknown
 ```
 
 Then, browse `http://localhost:8000`.
+
+# Emulation Accuracy
+Currently, this emulator passes [the Blargg's](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction test cases.
+
+![image](https://user-images.githubusercontent.com/43806767/50381598-5aecaa80-06ce-11e9-8415-6df6c5a5e1fe.png)
