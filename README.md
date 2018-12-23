@@ -35,6 +35,6 @@ $ cargo web start --bin wasm --target wasm32-unknown-unknown
 Then, browse `http://localhost:8000`.
 
 # Emulation Accuracy
-Currently, this emulator passes [Blargg's](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction test cases.
+Currently, this emulator passes [Blargg's](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction test cases (`cpu_instrs`) and CPU instruction timing test cases (`instr_timing`).
 
-![image](https://user-images.githubusercontent.com/43806767/50381598-5aecaa80-06ce-11e9-8415-6df6c5a5e1fe.png)
+![image](https://user-images.githubusercontent.com/43806767/50381598-5aecaa80-06ce-11e9-8415-6df6c5a5e1fe.png) ![image](https://user-images.githubusercontent.com/43806767/50383488-f8a89f80-06f7-11e9-8371-15995756fbe7.png)
