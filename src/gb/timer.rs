@@ -31,6 +31,12 @@ impl Timer {
         if self.is_timer_enabled(bus) {
             self.update_timer_freq(bus);
 
+            // Consume cycles
+            while self.timer.cycles >= self.timer.freq {
+                self.timer.cycles -= self.timer.freq;
+                self.inc_timer_reg(bus);
+            }
+
             let overflowed = self.timer.inc(cycle as u16);
             if overflowed {
                 self.inc_timer_reg(bus);
