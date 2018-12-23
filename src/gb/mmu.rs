@@ -99,7 +99,7 @@ impl Bus for Mmu {
             0xFF04 => {
                 // TODO: Should we reset divider's counter as well...?
                 self.memory.write8(addr, 0)
-            },
+            }
             // DMA transfer
             0xFF46 => self.dma_transfer(data),
 
