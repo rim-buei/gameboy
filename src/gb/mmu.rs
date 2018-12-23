@@ -95,6 +95,12 @@ impl Bus for Mmu {
             // Mirror of 0xC000...0xDDFF (Typically not used)
             0xE000...0xFDFF => self.memory.write8(addr - 0x2000, data),
 
+            // Divider register
+            0xFF04 => {
+                // TODO: Should we reset divider's counter as well...?
+                self.memory.write8(addr, 0)
+            }
+            // DMA transfer
             0xFF46 => self.dma_transfer(data),
 
             _ => self.memory.write8(addr, data),
