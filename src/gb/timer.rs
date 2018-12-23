@@ -1,5 +1,7 @@
 use super::bus::Bus;
 
+use super::interrupt::{self, Interrupt};
+
 const DIV_REG_ADDR: u16 = 0xFF04;
 const TIMA_REG_ADDR: u16 = 0xFF05;
 const TMA_REG_ADDR: u16 = 0xFF06;
@@ -58,7 +60,7 @@ impl Timer {
     fn inc_timer_reg<B: Bus>(&mut self, bus: &mut B) {
         let v = bus.read8(TIMA_REG_ADDR);
         if v == 0xFF {
-            // TODO: Request interrupt
+            interrupt::request(bus, Interrupt::Timer);
             bus.write8(TIMA_REG_ADDR, bus.read8(TMA_REG_ADDR));
         } else {
             bus.write8(TIMA_REG_ADDR, v + 1);
