@@ -5,14 +5,22 @@ use super::register::{LCDControl, Register::*};
 pub struct Renderer<'a, B: Bus + 'a> {
     frame_buffer: &'a mut FrameBuffer,
     bus: &'a mut B,
+
+    bgwin_colors: [u8; SCREEN_W as usize],
 }
 
 impl<'a, B: Bus + 'a> Renderer<'a, B> {
     pub fn new(frame_buffer: &'a mut FrameBuffer, bus: &'a mut B) -> Self {
-        Renderer { frame_buffer, bus }
+        Renderer {
+            frame_buffer,
+            bus,
+            bgwin_colors: [0; SCREEN_W as usize],
+        }
     }
 
     pub fn render_scanline(&mut self) {
+        self.bgwin_colors = [0; SCREEN_W as usize];
+
         let y = LY.read(self.bus);
         let control = LCDControl::new(LCDC.read(self.bus));
 
@@ -57,9 +65,11 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             let byte2 = self.bus.read8(tile_loc + 1);
 
             let color_bit = 7 - ((x_adjusted % 8) as u8);
-            let (r, g, b) = self.pick_rgb(palette, color_bit, byte1, byte2);
+            let color_n = get_color_number(color_bit, byte1, byte2);
 
+            let (r, g, b) = get_rgb(palette, color_n);
             self.frame_buffer.set_pixel(x, y, Pixel(r, g, b, 255));
+            self.bgwin_colors[x as usize] = color_n;
         }
     }
 
@@ -95,9 +105,11 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             let byte2 = self.bus.read8(tile_loc + 1);
 
             let color_bit = 7 - ((x_adjusted % 8) as u8);
-            let (r, g, b) = self.pick_rgb(palette, color_bit, byte1, byte2);
+            let color_n = get_color_number(color_bit, byte1, byte2);
 
+            let (r, g, b) = get_rgb(palette, color_n);
             self.frame_buffer.set_pixel(x, y, Pixel(r, g, b, 255));
+            self.bgwin_colors[x as usize] = color_n;
         }
     }
 
@@ -122,6 +134,7 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             let palette = if attrs & (1 << 4) != 0 { palette1 } else { palette0 };
             let x_flip = attrs & (1 << 5) != 0;
             let y_flip = attrs & (1 << 6) != 0;
+            let priority = attrs & (1 << 7) != 0;
 
             let tile_y = if y_flip {
                 sprite_height - 1 - y - sprite_y
@@ -142,25 +155,30 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
                 }
 
                 let color_bit = if x_flip { tile_x } else { 7 - tile_x };
-                let (r, g, b) = self.pick_rgb(palette, color_bit as u8, byte1, byte2);
-                if r == PALETTE[0].0 {
+                let color_n = get_color_number(color_bit as u8, byte1, byte2);
+                if color_n == 0 {
                     continue;
                 }
 
-                self.frame_buffer.set_pixel(x as u8, y as u8, Pixel(r, g, b, 255));
+                let (r, g, b) = get_rgb(palette, color_n);
+                if !priority || self.bgwin_colors[x as usize] == 0 {
+                    self.frame_buffer.set_pixel(x as u8, y as u8, Pixel(r, g, b, 255));
+                }
             }
         }
     }
+}
 
-    fn pick_rgb(&mut self, palette: u8, bit: u8, byte1: u8, byte2: u8) -> (u8, u8, u8) {
-        let lo = (byte1 & (1 << bit) != 0) as u8;
-        let hi = (byte2 & (1 << bit) != 0) as u8;
+fn get_color_number(bit: u8, byte1: u8, byte2: u8) -> u8 {
+    let lo = (byte1 & (1 << bit) != 0) as u8;
+    let hi = (byte2 & (1 << bit) != 0) as u8;
+    (hi << 1) | lo
+}
 
-        let color_n = (hi << 1) | lo;
-        let color = ((palette >> (color_n * 2)) & 0b11) as usize;
+fn get_rgb(palette: u8, color_n: u8) -> (u8, u8, u8) {
+    let color = (palette >> (color_n * 2)) & 0b11;
 
-        PALETTE[color]
-    }
+    PALETTE[color as usize]
 }
 
 const PALETTE: [(u8, u8, u8); 4] = [
