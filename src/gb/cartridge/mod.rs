@@ -1,8 +1,8 @@
+mod mbc0;
 mod mbc1;
-mod no_mbc;
 
+use self::mbc0::Mbc0;
 use self::mbc1::Mbc1;
-use self::no_mbc::NoMbc;
 
 const CARTRIDGE_TYPE_ADDR: u16 = 0x0147;
 
@@ -19,7 +19,7 @@ impl Cartridge {
 
         match data[CARTRIDGE_TYPE_ADDR as usize] {
             0x00 | 0x08 | 0x09 => Cartridge {
-                mbc: Box::new(NoMbc::new(data)),
+                mbc: Box::new(Mbc0::new(data)),
             },
             0x01 | 0x02 | 0x03 => Cartridge {
                 mbc: Box::new(Mbc1::new(data)),
