@@ -16,8 +16,7 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
         let control = LCDControl::new(LCDC.read(self.bus));
 
         if control.bgwin_enabled() {
-            self.render_bg_scanline();
-            self.render_win_scanline();
+            self.render_tile_scanline();
         }
 
         if control.obj_enabled() {
@@ -25,18 +24,47 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
         }
     }
 
-    fn render_bg_scanline(&mut self) {
+    fn rendering_window(&mut self) -> bool {
+        let y = LY.read(self.bus);
+        let window_y = WY.read(self.bus);
+        let window_enabled = LCDControl::new(LCDC.read(self.bus)).win_enabled();
+        window_enabled && (y >= window_y)
+    }
+
+    fn get_map_location(&mut self) -> u16 {
+        if self.rendering_window() {
+            LCDControl::new(LCDC.read(self.bus)).win_map_loc()
+        } else {
+            LCDControl::new(LCDC.read(self.bus)).bg_map_loc()
+        }
+    }
+
+    fn render_tile_scanline(&mut self) {
         let tiles_loc = LCDControl::new(LCDC.read(self.bus)).bgwin_tile_loc();
-        let map_loc = LCDControl::new(LCDC.read(self.bus)).bg_map_loc();
+        let map_loc = self.get_map_location();
+
         let scroll_x = SCX.read(self.bus);
         let scroll_y = SCY.read(self.bus);
+        let window_x = WX.read(self.bus) - 7;
+        let window_y = WY.read(self.bus);
 
         let y = LY.read(self.bus);
-        let y_adjusted: u16 = y as u16 + scroll_y as u16;
+
+        let y_adjusted: u16 = if self.rendering_window() {
+            y as u16 - window_y as u16
+        } else {
+            y as u16 + scroll_y as u16
+        };
+
         let tile_row = y_adjusted / 8 * 32;
 
         for x in 0..SCREEN_W {
-            let x_adjusted: u16 = x as u16 + scroll_x as u16;
+            let x_adjusted: u16 = if self.rendering_window() && (x >= window_x) {
+                x as u16 - window_x as u16
+            } else {
+                x as u16 + scroll_x as u16
+            };
+
             let tile_col = x_adjusted / 8;
 
             let tile_addr = map_loc + tile_row + tile_col;
@@ -57,8 +85,6 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             self.frame_buffer.set_pixel(x, y, Pixel(r, g, b, 255));
         }
     }
-
-    fn render_win_scanline(&mut self) {}
 
     fn render_obj_scanline(&mut self) {}
 
