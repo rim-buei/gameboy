@@ -28,38 +28,38 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
     fn render_bg_scanline(&mut self) {
         let tiles_loc = LCDControl::new(LCDC.read(self.bus)).bgwin_tile_loc();
         let map_loc = LCDControl::new(LCDC.read(self.bus)).bg_map_loc();
-        let scroll_y = SCY.read(self.bus);
         let scroll_x = SCX.read(self.bus);
+        let scroll_y = SCY.read(self.bus);
 
         let y = LY.read(self.bus);
-        let y_adjusted = (y as u16 + scroll_y as u16) as u8;
-        let tile_offset = (y_adjusted / 8) as u16 * 32;
+        let y_adjusted: u16 = y as u16 + scroll_y as u16;
+        let tile_row = y_adjusted / 8 * 32;
 
-        for tile_n in 0..32 {
-            let tile_id = if tiles_loc == 0x8800 {
-                (self.bus.read8(map_loc + tile_offset + tile_n) as i16 + 128) as u8
+        for x in 0..SCREEN_W {
+            let x_adjusted: u16 = x as u16 + scroll_x as u16;
+            let tile_col = x_adjusted / 8;
+
+            let tile_addr = map_loc + tile_row + tile_col;
+            let tile_loc = if tiles_loc == 0x8800 {
+                let tile_n = (self.bus.read8(tile_addr) as i8) as u16 + 128;
+                tiles_loc + (tile_n * 16) + ((y_adjusted % 8) * 2)
             } else {
-                self.bus.read8(map_loc + tile_offset + tile_n)
+                let tile_n = self.bus.read8(tile_addr) as u16;
+                tiles_loc + (tile_n * 16) + ((y_adjusted % 8) * 2)
             };
 
-            let tile_addr = tiles_loc + (tile_id as u16) * 16 + (y_adjusted % 8 * 2) as u16;
+            let byte1 = self.bus.read8(tile_loc);
+            let byte2 = self.bus.read8(tile_loc + 1);
 
-            let byte1 = self.bus.read8(tile_addr);
-            let byte2 = self.bus.read8(tile_addr + 1);
+            let color_bit = 7 - ((x_adjusted % 8) as u8);
+            let (r, g, b) = self.pick_rgb(color_bit, byte1, byte2);
 
-            let x = (tile_n * 8) as u8;
-            for tile_x in 0..8 {
-                if x + tile_x < SCREEN_W {
-                    let color_bit = 7 - tile_x;
-                    let (r, g, b) = self.pick_rgb(color_bit, byte1, byte2);
-
-                    self.frame_buffer.set_pixel(x + tile_x, y, Pixel(r, g, b, 255));
-                }
-            }
+            self.frame_buffer.set_pixel(x, y, Pixel(r, g, b, 255));
         }
     }
 
     fn render_win_scanline(&mut self) {}
+
     fn render_obj_scanline(&mut self) {}
 
     fn pick_rgb(&mut self, bit: u8, byte1: u8, byte2: u8) -> (u8, u8, u8) {
