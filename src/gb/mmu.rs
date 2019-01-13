@@ -3,15 +3,17 @@ use super::cartridge::Cartridge;
 use super::ram::Ram;
 
 pub struct Mmu {
-    memory: Ram,
+    state: State,
     cart: Cartridge,
+    memory: Ram,
 }
 
 impl Mmu {
     pub fn new() -> Self {
         Mmu {
-            memory: Ram::new(vec![0x00; 1 << 16]),
+            state: State::new(),
             cart: Cartridge::new(vec![0x00; 1 << 15]),
+            memory: Ram::new(vec![0x00; 1 << 16]),
         }
     }
 
@@ -62,6 +64,25 @@ impl Mmu {
         self.memory.write8(0xFF50, 0x01);
     }
 
+    pub fn is_joypad_state_required(&self) -> bool {
+        self.state.joypad_required
+    }
+
+    pub fn receive_joypad_state(&mut self, state: (u8, u8)) {
+        let value = self.read8(0xFF00);
+
+        let input = if value & 0x10 == 0x00 {
+            state.0
+        } else if value & 0x20 == 0x00 {
+            state.1
+        } else {
+            0x0F
+        };
+
+        self.write8(0xFF00, value | 0b1100_0000 | input);
+        self.state.joypad_required = false;
+    }
+
     fn dma_transfer(&mut self, value: u8) {
         let start_addr = (value as u16) * 0x100;
         for i in 0..0xA0 {
@@ -95,10 +116,18 @@ impl Bus for Mmu {
             // Mirror of 0xC000...0xDDFF (Typically not used)
             0xE000...0xFDFF => self.memory.write8(addr - 0x2000, data),
 
+            // Joypad register
+            0xFF00 => {
+                if (data & 0x10) == 0x00 || (data & 0x20) == 0x00 {
+                    self.state.joypad_required = true
+                }
+                self.memory.write8(addr, data);
+            }
+
             // Divider register
             0xFF04 => {
                 // TODO: Should we reset divider's counter as well...?
-                self.memory.write8(addr, 0)
+                self.memory.write8(addr, 0);
             }
             // DMA transfer
             0xFF46 => self.dma_transfer(data),
@@ -110,5 +139,15 @@ impl Bus for Mmu {
     fn write16(&mut self, addr: u16, data: u16) {
         self.write8(addr, (data & 0xFF) as u8);
         self.write8(addr.wrapping_add(1), (data >> 8) as u8);
+    }
+}
+
+struct State {
+    joypad_required: bool,
+}
+
+impl State {
+    fn new() -> Self {
+        State { joypad_required: false }
     }
 }
