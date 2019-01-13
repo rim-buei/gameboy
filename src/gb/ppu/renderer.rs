@@ -73,7 +73,7 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
         }
     }
 
-    // TODO: This implementation is almost same as background
+    // TODO: Refactoring (This implementation is almost same as background)
     fn render_window_scanline(&mut self, y: u8) {
         let tiles_loc = LCDControl::new(LCDC.read(self.bus)).bgwin_tile_loc();
         let map_loc = LCDControl::new(LCDC.read(self.bus)).win_map_loc();
@@ -177,7 +177,6 @@ fn get_color_number(bit: u8, byte1: u8, byte2: u8) -> u8 {
 
 fn get_rgb(palette: u8, color_n: u8) -> (u8, u8, u8) {
     let color = (palette >> (color_n * 2)) & 0b11;
-
     PALETTE[color as usize]
 }
 
