@@ -32,15 +32,15 @@ pub struct Joypad {
 
 impl Joypad {
     pub fn new() -> Self {
-        Joypad { p14: 0x00, p15: 0x00 }
+        Joypad { p14: 0x0F, p15: 0x0F }
     }
 
     pub fn press<B: Bus>(&mut self, bus: &mut B, button: Button) {
         use self::Button::*;
 
         match button {
-            Up | Down | Left | Right => self.p14 |= button.bit(),
-            A | B | Start | Select => self.p15 |= button.bit(),
+            Up | Down | Left | Right => self.p14 ^= button.bit(),
+            A | B | Start | Select => self.p15 ^= button.bit(),
         };
 
         interrupt::request(bus, Interrupt::Joypad);
@@ -50,8 +50,8 @@ impl Joypad {
         use self::Button::*;
 
         match button {
-            Up | Down | Left | Right => self.p14 ^= button.bit(),
-            A | B | Start | Select => self.p15 ^= button.bit(),
+            Up | Down | Left | Right => self.p14 |= button.bit(),
+            A | B | Start | Select => self.p15 |= button.bit(),
         };
     }
 
@@ -71,12 +71,12 @@ mod tests {
         let mut joypad = Joypad::new();
         let mut mmu = Mmu::new();
 
-        assert_eq!((0b0000, 0b0000), joypad.transfer_state());
+        assert_eq!((0b1111, 0b1111), joypad.transfer_state());
         joypad.press(&mut mmu, Button::A);
         joypad.press(&mut mmu, Button::B);
         joypad.press(&mut mmu, Button::Down);
-        assert_eq!((0b1000, 0b0011), joypad.transfer_state());
+        assert_eq!((0b0111, 0b1100), joypad.transfer_state());
         joypad.release(Button::A);
-        assert_eq!((0b1000, 0b0010), joypad.transfer_state());
+        assert_eq!((0b0111, 0b1101), joypad.transfer_state());
     }
 }
