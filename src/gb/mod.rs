@@ -14,7 +14,7 @@ mod ram;
 
 use self::cartridge::Cartridge;
 use self::cpu::Cpu;
-use self::joypad::Button;
+use self::joypad::{Button, Joypad};
 use self::mmu::Mmu;
 use self::ppu::Ppu;
 use self::screen::Screen;
@@ -26,6 +26,7 @@ pub struct GameBoy {
     mmu: Mmu,
     timer: Timer,
     screen: Screen,
+    joypad: Joypad,
 
     paused: bool,
 }
@@ -38,6 +39,7 @@ impl GameBoy {
             mmu: Mmu::new(),
             timer: Timer::new(),
             screen: Screen::new(),
+            joypad: Joypad::new(),
 
             paused: true,
         }
@@ -49,6 +51,7 @@ impl GameBoy {
         self.mmu.simulate_bootloader();
         self.mmu.load_cartridge(cart);
         self.timer = Timer::new();
+        self.joypad = Joypad::new();
     }
 
     pub fn step(&mut self) -> Vec<u8> {
@@ -61,6 +64,9 @@ impl GameBoy {
             self.ppu.step(&mut self.mmu, cycle);
             self.timer.step(&mut self.mmu, cycle);
 
+            if self.mmu.is_joypad_state_required() {
+                self.mmu.receive_joypad_state(self.joypad.transfer_state());
+            }
             if self.ppu.is_screen_prepared() {
                 break;
             }
@@ -78,11 +84,11 @@ impl GameBoy {
         self.paused = false;
     }
 
-    pub fn press(&mut self, _: Button) {
-        // TODO: Implementation
+    pub fn press(&mut self, button: Button) {
+        self.joypad.press(&mut self.mmu, button);
     }
 
-    pub fn release(&mut self, _: Button) {
-        // TODO: Implementation
+    pub fn release(&mut self, button: Button) {
+        self.joypad.release(button);
     }
 }
