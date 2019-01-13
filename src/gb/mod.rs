@@ -1,4 +1,5 @@
 pub mod cartridge;
+pub mod joypad;
 pub mod screen;
 
 // TODO: The followings should be private in the future
@@ -13,6 +14,7 @@ mod ram;
 
 use self::cartridge::Cartridge;
 use self::cpu::Cpu;
+use self::joypad::Button;
 use self::mmu::Mmu;
 use self::ppu::Ppu;
 use self::screen::Screen;
@@ -74,5 +76,13 @@ impl GameBoy {
 
     pub fn unpause(&mut self) {
         self.paused = false;
+    }
+
+    pub fn press(&mut self, _: Button) {
+        // TODO: Implementation
+    }
+
+    pub fn release(&mut self, _: Button) {
+        // TODO: Implementation
     }
 }
