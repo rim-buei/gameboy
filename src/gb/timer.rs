@@ -1,5 +1,4 @@
 use super::bus::Bus;
-
 use super::interrupt::{self, Interrupt};
 
 const DIV_REG_ADDR: u16 = 0xFF04;
