@@ -69,6 +69,10 @@ fn handle_input(gameboy: Rc<RefCell<GameBoy>>) {
     };
 
     web::window().add_event_listener(enclose!([gameboy] move |event: KeyDownEvent| {
+        if event.repeat() {
+            return;
+        }
+
         match handler(&event.key()) {
             Some(button) => {
                 gameboy.borrow_mut().press(button);
