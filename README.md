@@ -10,7 +10,9 @@ This project doesn't plan to support Game Boy Color's features, but instead aims
 - Able to run/play some Game Boy roms
 
 # Screenshot Gallery
-![image](https://user-images.githubusercontent.com/43806767/48777725-b82fbd80-ed16-11e8-8ab9-82351dfe0f8c.png)
+![image](https://user-images.githubusercontent.com/43806767/51184897-f8777a80-1918-11e9-81dd-d15cb33dd901.png "Super Mario Land") ![image](https://user-images.githubusercontent.com/43806767/51185063-83587500-1919-11e9-9ff4-684cb7fcb8e7.png "Dr. Mario")
+
+![image](https://user-images.githubusercontent.com/43806767/51185395-58225580-191a-11e9-8955-fd50b3956668.png "Pokemon Red") ![image](https://user-images.githubusercontent.com/43806767/51185596-f57d8980-191a-11e9-9ed9-f70a598a8682.png "Kirby's Dream Land")
 
 # How to Setup
 ## Requirements
