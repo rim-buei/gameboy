@@ -64,8 +64,8 @@ impl Mmu {
         self.memory.write8(0xFF50, 0x01);
     }
 
-    pub fn is_joypad_state_required(&self) -> bool {
-        self.state.joypad_required
+    pub fn is_joypad_state_requested(&self) -> bool {
+        self.state.joypad_requested
     }
 
     pub fn receive_joypad_state(&mut self, state: (u8, u8)) {
@@ -80,7 +80,7 @@ impl Mmu {
         };
 
         self.write8(0xFF00, value | 0b1100_0000 | input);
-        self.state.joypad_required = false;
+        self.state.joypad_requested = false;
     }
 
     fn dma_transfer(&mut self, value: u8) {
@@ -119,7 +119,7 @@ impl Bus for Mmu {
             // Joypad register
             0xFF00 => {
                 if (data & 0x10) == 0x00 || (data & 0x20) == 0x00 {
-                    self.state.joypad_required = true
+                    self.state.joypad_requested = true
                 }
                 self.memory.write8(addr, data);
             }
@@ -143,11 +143,13 @@ impl Bus for Mmu {
 }
 
 struct State {
-    joypad_required: bool,
+    joypad_requested: bool,
 }
 
 impl State {
     fn new() -> Self {
-        State { joypad_required: false }
+        State {
+            joypad_requested: false,
+        }
     }
 }

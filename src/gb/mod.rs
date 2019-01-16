@@ -66,7 +66,7 @@ impl GameBoy {
             self.ppu.step(&mut self.mmu, cycle);
             self.timer.step(&mut self.mmu, cycle);
 
-            if self.mmu.is_joypad_state_required() {
+            if self.mmu.is_joypad_state_requested() {
                 self.mmu.receive_joypad_state(self.joypad.transfer_state());
             }
             if self.ppu.is_screen_prepared() {
