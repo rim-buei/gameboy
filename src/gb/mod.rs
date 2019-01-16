@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod cartridge;
 pub mod joypad;
 pub mod screen;
