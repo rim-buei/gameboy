@@ -1,12 +1,11 @@
 mod register;
 mod renderer;
 
-use self::register::{LCDControl, LCDStatus, Register::*};
+use self::register::{LCDStatus, Register::*};
 use self::renderer::Renderer;
 use super::bus::Bus;
 use super::interrupt::{self, Interrupt};
 use super::screen::{FrameBuffer, SCREEN_H};
-use std::fmt;
 
 const ONE_CYCLE: u16 = 456;
 
@@ -22,8 +21,6 @@ pub struct Ppu {
     state: State,
     screen: FrameBuffer,
     screen_buffer: FrameBuffer,
-
-    debug_info: Vec<String>, // For debugging
 }
 
 impl Ppu {
@@ -32,13 +29,10 @@ impl Ppu {
             state: State::new(),
             screen: FrameBuffer::new(),
             screen_buffer: FrameBuffer::new(),
-
-            debug_info: vec![],
         }
     }
 
     pub fn step<B: Bus>(&mut self, bus: &mut B, cycle: u8) {
-        self.update_debug_info(bus);
         self.update_lcd_status(bus);
 
         {
@@ -63,36 +57,6 @@ impl Ppu {
 
             self.state.line_drawn = false;
         }
-    }
-
-    fn update_debug_info<B: Bus>(&mut self, bus: &mut B) {
-        self.debug_info.clear();
-
-        let lcdc = LCDControl::new(LCDC.read(bus));
-        self.debug_info.push(format!(
-            "LCD_ON: {}, BGWIN_ON: {}, WIN_ON: {}, OBJ_ON: {}",
-            lcdc.lcd_enabled(),
-            lcdc.bgwin_enabled(),
-            lcdc.win_enabled(),
-            lcdc.obj_enabled(),
-        ));
-        self.debug_info.push(format!(
-            "TILE_LOC: 0x{:04X}, BG_MAP_LOC: 0x{:04X}, WIN_MAP_LOC: 0x{:04X}",
-            lcdc.bgwin_tile_loc(),
-            lcdc.bg_map_loc(),
-            lcdc.win_map_loc(),
-        ));
-
-        let ly = LY.read(bus);
-        let lyc = LYC.read(bus);
-        self.debug_info.push(format!("LY: {}, LYC: {}", ly, lyc));
-
-        let scy = SCY.read(bus);
-        let scx = SCX.read(bus);
-        let wy = WY.read(bus);
-        let wx = WX.read(bus);
-        self.debug_info
-            .push(format!("SCY: {}, SCX: {}, WY: {}, WX: {}", scy, scx, wy, wx));
     }
 
     fn update_lcd_status<B: Bus>(&mut self, bus: &mut B) {
@@ -155,13 +119,6 @@ impl Ppu {
 
         self.state.screen_prepared = false;
         self.screen
-    }
-}
-
-impl fmt::Debug for Ppu {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let ss: Vec<String> = self.debug_info.iter().map(|s| format!("[PPU] {}", s)).collect();
-        write!(f, "{}", ss.join("\n"))
     }
 }
 
