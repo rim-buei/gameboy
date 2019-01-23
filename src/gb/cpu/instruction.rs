@@ -263,7 +263,6 @@ pub fn exec<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8, u8) {
         0xFD => p.undefined(opcode).r(1, 0),                 // [Undefined]
         0xFE => p.cp8(Immediate8).r(2, 8),                   // [CP d8] [2  8] [Z 1 H C]
         0xFF => p.rst(0x38).r(0, 16),                        // [RST 38H] [1  16] [- - - -]
-        _ => p.undefined(opcode).r(1, 0),
     }
 }
 
@@ -527,7 +526,6 @@ pub fn exec_prefix_cb<B: Bus>(opcode: u8, state: &mut State, bus: &mut B) -> (u8
         0xFD => p.set8(7, R8::L).r(2, 8),        // [SET 7,L] [2  8] [- - - -]
         0xFE => p.set8(7, Address::HL).r(2, 16), // [SET 7,(HL)] [2  16] [- - - -]
         0xFF => p.set8(7, R8::A).r(2, 8),        // [SET 7,A] [2  8] [- - - -]
-        _ => p.undefined(opcode).r(1, 0),
     }
 }
 
