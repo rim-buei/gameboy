@@ -53,8 +53,8 @@ fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) {
 fn handle_input(gameboy: Rc<RefCell<GameBoy>>) {
     let handler = |key: &str| -> Option<Button> {
         match key.to_lowercase().as_ref() {
-            "z" => Some(Button::A),
-            "x" => Some(Button::B),
+            "z" => Some(Button::B),
+            "x" => Some(Button::A),
 
             "enter" => Some(Button::Start),
             "shift" => Some(Button::Select),
