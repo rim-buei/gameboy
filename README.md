@@ -10,9 +10,9 @@ This project doesn't plan to support Game Boy Color's features, but instead aims
 - Able to run/play some Game Boy roms
 
 # Screenshot Gallery
-![image](https://user-images.githubusercontent.com/43806767/51184897-f8777a80-1918-11e9-81dd-d15cb33dd901.png "Super Mario Land") ![image](https://user-images.githubusercontent.com/43806767/51185063-83587500-1919-11e9-9ff4-684cb7fcb8e7.png "Dr. Mario")
+![image](https://user-images.githubusercontent.com/43806767/51608951-38171580-1f5c-11e9-8d6d-bdfa52c4387d.png "Super Mario Land") ![image](https://user-images.githubusercontent.com/43806767/51608995-54b34d80-1f5c-11e9-91f8-b69d43403a6e.png "Dr. Mario")
 
-![image](https://user-images.githubusercontent.com/43806767/51185395-58225580-191a-11e9-8955-fd50b3956668.png "Pokemon Red") ![image](https://user-images.githubusercontent.com/43806767/51185596-f57d8980-191a-11e9-9ed9-f70a598a8682.png "Kirby's Dream Land")
+![image](https://user-images.githubusercontent.com/43806767/51609044-77ddfd00-1f5c-11e9-8ad8-bc5866dc0c16.png "Kirby's Dream Land") ![image](https://user-images.githubusercontent.com/43806767/51609077-89bfa000-1f5c-11e9-9d9c-b0a62e58680f.png "Pokemon Red")
 
 # How to Setup
 ## Requirements
@@ -44,7 +44,7 @@ Then, browse `http://localhost:8000`.
 # Emulation Accuracy
 Currently, this emulator passes [Blargg's](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction test cases (`cpu_instrs`) and CPU instruction timing test cases (`instr_timing`).
 
-![image](https://user-images.githubusercontent.com/43806767/50381598-5aecaa80-06ce-11e9-8415-6df6c5a5e1fe.png) ![image](https://user-images.githubusercontent.com/43806767/50383488-f8a89f80-06f7-11e9-8371-15995756fbe7.png)
+![image](https://user-images.githubusercontent.com/43806767/51609112-9fcd6080-1f5c-11e9-81d0-ae538398124e.png "cpu_instrs") ![image](https://user-images.githubusercontent.com/43806767/51609172-bb386b80-1f5c-11e9-8269-943c454d66c4.png "instr_timing")
 
 Meanwhile, cannot pass the other test cases :disappointed:
 
