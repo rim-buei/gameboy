@@ -24,6 +24,15 @@ impl Cartridge {
             0x01 | 0x02 | 0x03 => Cartridge {
                 mbc: Box::new(Mbc1::new(data)),
             },
+            0x05 | 0x06 => {
+                panic!("unsupported cartridge type: MBC2");
+            }
+            0x0F | 0x10 | 0x11 | 0x12 | 0x13 => {
+                panic!("unsupported cartridge type: MBC3");
+            }
+            0x19 | 0x1A | 0x1B | 0x1C | 0x1D | 0x1E => {
+                panic!("unsupported cartridge type: MBC5");
+            }
             _ => {
                 // TODO: Add more MBC supports
                 panic!("unsupported cartridge type");
