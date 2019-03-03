@@ -53,4 +53,4 @@ There are still known issues and missing features:
 - No APU support
 - No save file support
 - No link cable support
-- Support for MBC 2/3/5 are missing
+- Support for MBC 2/3 are missing
