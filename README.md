@@ -21,7 +21,7 @@ This project doesn't plan to support Game Boy Color's features, but instead aims
 
 ## Setup Rust
 ```sh
-$ curl https://sh.rustup.rs -sSf | sh
+$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 $ rustup default nightly
 $ rustup target add wasm32-unknown-unknown
 ```

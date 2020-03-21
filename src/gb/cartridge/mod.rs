@@ -9,7 +9,7 @@ use self::mbc5::Mbc5;
 const CARTRIDGE_TYPE_ADDR: u16 = 0x0147;
 
 pub struct Cartridge {
-    mbc: Box<MemoryBankController>,
+    mbc: Box<dyn MemoryBankController>,
 }
 
 impl Cartridge {
