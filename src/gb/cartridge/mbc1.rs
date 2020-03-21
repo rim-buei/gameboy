@@ -33,9 +33,9 @@ impl MemoryBankController for Mbc1 {
     fn read(&self, addr: u16) -> u8 {
         let addr = addr as usize;
         match addr {
-            0x0000...0x3FFF => self.rom[addr],
-            0x4000...0x7FFF => self.rom[(addr - 0x4000) + (self.rom_bank * 0x4000)],
-            0xA000...0xBFFF => {
+            0x0000..=0x3FFF => self.rom[addr],
+            0x4000..=0x7FFF => self.rom[(addr - 0x4000) + (self.rom_bank * 0x4000)],
+            0xA000..=0xBFFF => {
                 if !self.ram_enabled {
                     return 0xFF;
                 }
@@ -49,28 +49,28 @@ impl MemoryBankController for Mbc1 {
     fn write(&mut self, addr: u16, data: u8) {
         let addr = addr as usize;
         match addr {
-            0x0000...0x1FFF => match data & 0x0F {
+            0x0000..=0x1FFF => match data & 0x0F {
                 0x00 => self.ram_enabled = false,
                 0x0A => self.ram_enabled = true,
                 _ => (),
             },
-            0x2000...0x3FFF => {
+            0x2000..=0x3FFF => {
                 self.rom_bank = (data & 0x1F) as usize | (self.rom_bank & 0xE0);
                 self.rom_bank = increment_rom_bank(self.rom_bank);
             }
-            0x4000...0x5FFF => match self.memory_model {
+            0x4000..=0x5FFF => match self.memory_model {
                 MemoryModel::Model0 => {
                     self.rom_bank = ((data & 0x03) << 5) as usize | (self.rom_bank & 0x1F);
                     self.rom_bank = increment_rom_bank(self.rom_bank);
                 }
                 MemoryModel::Model1 => self.ram_bank = (data & 0x03) as usize,
             },
-            0x6000...0x7FFF => match data & 0x01 {
+            0x6000..=0x7FFF => match data & 0x01 {
                 0x00 => self.memory_model = MemoryModel::Model0,
                 0x01 => self.memory_model = MemoryModel::Model1,
                 _ => unreachable!(),
             },
-            0xA000...0xBFFF => {
+            0xA000..=0xBFFF => {
                 if !self.ram_enabled {
                     return;
                 }

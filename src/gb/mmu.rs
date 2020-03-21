@@ -94,11 +94,11 @@ impl Mmu {
 impl Bus for Mmu {
     fn read8(&self, addr: u16) -> u8 {
         match addr {
-            0x0000...0x7FFF => self.cart.read(addr),
-            0xA000...0xBFFF => self.cart.read(addr),
+            0x0000..=0x7FFF => self.cart.read(addr),
+            0xA000..=0xBFFF => self.cart.read(addr),
 
-            // Mirror of 0xC000...0xDDFF (Typically not used)
-            0xE000...0xFDFF => self.memory.read8(addr - 0x2000),
+            // Mirror of 0xC000..=0xDDFF (Typically not used)
+            0xE000..=0xFDFF => self.memory.read8(addr - 0x2000),
 
             _ => self.memory.read8(addr),
         }
@@ -110,11 +110,11 @@ impl Bus for Mmu {
 
     fn write8(&mut self, addr: u16, data: u8) {
         match addr {
-            0x0000...0x7FFF => self.cart.write(addr, data),
-            0xA000...0xBFFF => self.cart.write(addr, data),
+            0x0000..=0x7FFF => self.cart.write(addr, data),
+            0xA000..=0xBFFF => self.cart.write(addr, data),
 
-            // Mirror of 0xC000...0xDDFF (Typically not used)
-            0xE000...0xFDFF => self.memory.write8(addr - 0x2000, data),
+            // Mirror of 0xC000..=0xDDFF (Typically not used)
+            0xE000..=0xFDFF => self.memory.write8(addr - 0x2000, data),
 
             // Joypad register
             0xFF00 => {
@@ -126,7 +126,7 @@ impl Bus for Mmu {
 
             // Divider register
             0xFF04 => {
-                // TODO: Should we reset divider's counter as well...?
+                // TODO: Should we reset divider's counter as well..=?
                 self.memory.write8(addr, 0);
             }
             // DMA transfer

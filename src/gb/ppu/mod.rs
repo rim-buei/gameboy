@@ -70,11 +70,11 @@ impl Ppu {
             status.vblank_interrupt_enabled()
         } else {
             match self.state.clock {
-                0...79 => {
+                0..=79 => {
                     status.set_mode(Mode::OAMRead);
                     status.oam_interrupt_enabled()
                 }
-                80...251 => {
+                80..=251 => {
                     if !self.state.line_drawn {
                         let mut renderer = Renderer::new(&mut self.screen_buffer, bus);
                         renderer.render_scanline();
