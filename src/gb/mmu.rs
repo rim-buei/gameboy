@@ -126,7 +126,7 @@ impl Bus for Mmu {
 
             // Divider register
             0xFF04 => {
-                // TODO: Should we reset divider's counter as well..=?
+                // TODO: Should we reset divider's counter as well...?
                 self.memory.write8(addr, 0);
             }
             // DMA transfer
