@@ -48,11 +48,11 @@ Then open `http://localhost:8000` in your browser.
 
 # Emulation Accuracy
 
-Currently, this emulator passes [Blargg’s](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction tests (`cpu_instrs`) and CPU instruction timing tests (`instr_timing`):
+Currently, this emulator passes [Blargg's](http://gbdev.gg8.se/files/roms/blargg-gb-tests/) CPU instruction tests (`cpu_instrs`) and CPU instruction timing tests (`instr_timing`):
 
 ![image](https://user-images.githubusercontent.com/43806767/51609112-9fcd6080-1f5c-11e9-81d0-ae538398124e.png "cpu_instrs") ![image](https://user-images.githubusercontent.com/43806767/51609172-bb386b80-1f5c-11e9-8269-943c454d66c4.png "instr_timing")
 
-Other test cases are not yet passing. :disappointed:
+Other test cases are not yet passing :disappointed:
 
 # Known Issues / Missing Features
 
