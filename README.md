@@ -24,24 +24,24 @@ This project does not aim to support Game Boy Color's features. Instead, it focu
 ## Install Rust
 
 ```sh
-$ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-$ rustup default nightly
-$ rustup target add wasm32-unknown-unknown
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup default nightly
+rustup target add wasm32-unknown-unknown
 ```
 
 ## Install `cargo-web`
 
 ```sh
-$ cargo install cargo-web
+cargo install cargo-web
 ```
 
 # How to Run
 
 Clone the repository and launch `cargo-web`:
 ```sh
-$ git clone https://github.com/rim-buei/gameboy.git
-$ cd gameboy
-$ cargo web start --bin wasm --target wasm32-unknown-unknown
+git clone https://github.com/rim-buei/gameboy.git
+cd gameboy
+cargo web start --bin wasm --target wasm32-unknown-unknown
 ```
 
 Then open `http://localhost:8000` in your browser.
