@@ -1,16 +1,38 @@
 [package]
 name = "gameboy"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Rim <rim.buei@gmail.com>"]
 edition = "2018"
 
-[dependencies]
-stdweb = "*"
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
 
 [[bin]]
 name = "cli"
 path = "src/cli.rs"
 
-[[bin]]
-name = "wasm"
-path = "src/wasm.rs"
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+console_error_panic_hook = "0.1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
+version = "0.3"
+features = [
+  "console",
+  "Document",
+  "Element",
+  "EventTarget",
+  "Event",
+  "Window",
+  "HtmlCanvasElement",
+  "HtmlInputElement",
+  "CanvasRenderingContext2d",
+  "ImageData",
+  "KeyboardEvent",
+  "File",
+  "FileList",
+  "FileReader",
+  "ProgressEvent",
+]
