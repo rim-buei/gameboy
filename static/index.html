@@ -20,6 +20,9 @@
   <body>
     <input type="file" id="load-rom"/>
     <canvas width="160" height="144"></canvas>
-    <script src="wasm.js"></script>
+    <script type="module">
+      import init from './pkg/gameboy.js';
+      init();
+    </script>
   </body>
 </html>
