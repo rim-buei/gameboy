@@ -31,7 +31,7 @@ cargo install wasm-pack
 
 # How to Run
 
-Clone the repository and launch `wasm-pack`:
+Clone the repository and build the project with `wasm-pack`:
 ```sh
 git clone https://github.com/rim-buei/gameboy.git
 cd gameboy
