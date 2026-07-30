@@ -1116,11 +1116,11 @@ mod tests {
         };
         {
             let test = &TestCase {
-            a: 0b1000_0001,
-            sra: 0b1100_0000,
-            srl: 0b0100_0000,
-            swap: 0b0001_1000,
-        };
+                a: 0b1000_0001,
+                sra: 0b1100_0000,
+                srl: 0b0100_0000,
+                swap: 0b0001_1000,
+            };
             {
                 let mut state = State::new();
                 let mut ram = Ram::new(vec![0x00]);
