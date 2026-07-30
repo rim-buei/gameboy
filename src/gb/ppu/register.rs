@@ -1,6 +1,7 @@
 use super::super::bus::Bus;
 use super::Mode;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone)]
 pub enum Register {
     LCDC, // LCD Control
