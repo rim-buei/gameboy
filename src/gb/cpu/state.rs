@@ -83,7 +83,7 @@ impl State {
     }
 
     pub fn set_flag(&mut self, flag: Flag, v: bool) -> &mut Self {
-        if v == true {
+        if v {
             self.enable_flag(flag)
         } else {
             self.disable_flag(flag)

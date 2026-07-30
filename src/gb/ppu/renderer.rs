@@ -64,7 +64,7 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             let byte1 = self.bus.read8(tile_loc);
             let byte2 = self.bus.read8(tile_loc + 1);
 
-            let color_bit = 7 - ((x_adjusted % 8) as u8);
+            let color_bit = 7 - (x_adjusted % 8);
             let color_n = get_color_number(color_bit, byte1, byte2);
 
             let (r, g, b) = get_rgb(palette, color_n);
@@ -104,7 +104,7 @@ impl<'a, B: Bus + 'a> Renderer<'a, B> {
             let byte1 = self.bus.read8(tile_loc);
             let byte2 = self.bus.read8(tile_loc + 1);
 
-            let color_bit = 7 - ((x_adjusted % 8) as u8);
+            let color_bit = 7 - (x_adjusted % 8);
             let color_n = get_color_number(color_bit, byte1, byte2);
 
             let (r, g, b) = get_rgb(palette, color_n);
