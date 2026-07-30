@@ -1,7 +1,7 @@
 use super::super::bus::Bus;
 use super::super::interrupt;
-use super::io::{Reader16, Reader8, Writer16, Writer8};
-use super::oprand::{Condition, Data16, Immediate8, Register16 as R16, Register8 as R8};
+use super::io::{Reader8, Reader16, Writer8, Writer16};
+use super::oprand::{Condition, Data16, Immediate8, Register8 as R8, Register16 as R16};
 use super::state::{Flag, State};
 
 pub struct Processor<'a, B: Bus + 'a> {

@@ -1,9 +1,9 @@
 mod gb;
 
+use self::gb::GameBoy;
 use self::gb::cartridge::Cartridge;
 use self::gb::joypad::Button;
 use self::gb::screen::{SCREEN_H, SCREEN_W};
-use self::gb::GameBoy;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::closure::Closure;
