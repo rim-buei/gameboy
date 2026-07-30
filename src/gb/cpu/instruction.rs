@@ -1,5 +1,5 @@
 use super::super::bus::Bus;
-use super::oprand::{Address, Condition, Immediate16, Immediate8, Register16 as R16, Register8 as R8};
+use super::oprand::{Address, Condition, Immediate8, Immediate16, Register8 as R8, Register16 as R16};
 use super::processor::Processor;
 use super::state::State;
 

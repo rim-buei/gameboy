@@ -1,5 +1,5 @@
 use super::super::bus::Bus;
-use super::io::{Reader16, Reader8, Writer16, Writer8};
+use super::io::{Reader8, Reader16, Writer8, Writer16};
 use super::state::{Flag, State};
 
 #[derive(Debug, Copy, Clone)]

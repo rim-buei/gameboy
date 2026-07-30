@@ -68,27 +68,15 @@ impl LCDControl {
     }
 
     pub fn obj_height(&self) -> u8 {
-        if self.0 & (1 << 2) == 0 {
-            8
-        } else {
-            16
-        }
+        if self.0 & (1 << 2) == 0 { 8 } else { 16 }
     }
 
     pub fn bg_map_loc(&self) -> u16 {
-        if self.0 & (1 << 3) == 0 {
-            0x9800
-        } else {
-            0x9C00
-        }
+        if self.0 & (1 << 3) == 0 { 0x9800 } else { 0x9C00 }
     }
 
     pub fn bgwin_tile_loc(&self) -> u16 {
-        if self.0 & (1 << 4) == 0 {
-            0x8800
-        } else {
-            0x8000
-        }
+        if self.0 & (1 << 4) == 0 { 0x8800 } else { 0x8000 }
     }
 
     pub fn win_enabled(&self) -> bool {
@@ -96,11 +84,7 @@ impl LCDControl {
     }
 
     pub fn win_map_loc(&self) -> u16 {
-        if self.0 & (1 << 6) == 0 {
-            0x9800
-        } else {
-            0x9C00
-        }
+        if self.0 & (1 << 6) == 0 { 0x9800 } else { 0x9C00 }
     }
 
     pub fn lcd_enabled(&self) -> bool {
