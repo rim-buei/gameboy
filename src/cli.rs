@@ -6,7 +6,6 @@ use self::gb::cpu::Cpu;
 use self::gb::mmu::Mmu;
 use self::gb::ppu::Ppu;
 use self::gb::timer::Timer;
-use std::io::Write;
 
 fn main() {
     let mut cpu = Cpu::new();
@@ -19,7 +18,7 @@ fn main() {
     match load_rom_from_first_arg() {
         Ok(cart) => mmu.load_cartridge(cart),
         Err(err) => {
-            writeln!(std::io::stderr(), "{}", err.to_string()).unwrap();
+            eprintln!("{}", err);
             std::process::exit(1);
         }
     }

@@ -1,0 +1,71 @@
+name: CI for pull requests
+
+permissions: {}
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+
+jobs:
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - name: Run fmt check
+        run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+          components: clippy
+      - name: Run clippy check
+        run: cargo clippy --all-targets --all-features
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-26
+          - macos-26-intel
+        toolchain:
+          - stable
+          - nightly
+        profile:
+          - release
+    outputs:
+      release_built: ${{ steps.set-output.outputs.release_built }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rust-src
+      - name: Build binaries in "${{ matrix.profile }}" mode
+        run: cargo build --profile ${{ matrix.profile }}
+        env:
+          TARGET: ${{ matrix.target }}
+      - name: Run tests in "${{ matrix.profile }}" mode
+        run: cargo test --profile ${{ matrix.profile }}

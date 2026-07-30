@@ -50,7 +50,7 @@ impl MemoryBankController for Mbc5 {
             },
             0x2000..=0x2FFF => self.rom_bank = (self.rom_bank & 0x100) | data,
             0x3000..=0x3FFF => self.rom_bank = (self.rom_bank & 0x0FF) | ((data & 0x01) << 8),
-            0x4000..=0x5FFF => self.ram_bank = (data & 0x0F) as usize,
+            0x4000..=0x5FFF => self.ram_bank = data & 0x0F,
             _ => panic!("inaccessible address"),
         };
     }

@@ -15,8 +15,8 @@ pub struct Processor<'a, B: Bus + 'a> {
 impl<'a, B: Bus + 'a> Processor<'a, B> {
     pub fn new(state: &'a mut State, bus: &'a mut B) -> Self {
         Processor {
-            state: state,
-            bus: bus,
+            state,
+            bus,
 
             extra_opsize: 0,
             extra_cycle: 0,
@@ -97,12 +97,12 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
     pub fn add_r16_e8<R16: Reader16, R8: Reader8>(&mut self, lhs: R16, rhs: R8) -> u16 {
         // This implementation might be wrong
-        let a = lhs.read16(self.state, self.bus) as u16;
+        let a = lhs.read16(self.state, self.bus);
         let b = rhs.read8(self.state, self.bus) as i8;
         let c = if 0 < b {
             a.wrapping_add(b as u16)
         } else {
-            a.wrapping_sub(b.abs() as u16)
+            a.wrapping_sub(b.unsigned_abs() as u16)
         };
         let hcarry = (c & 0x0F) < (a & 0x0F);
         let carry = (c & 0xFF) < (a & 0xFF);
@@ -296,7 +296,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
     pub fn rlc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.state, self.bus);
-        let w = (r << 1) | (r >> 7);
+        let w = r.rotate_left(1);
 
         self.state.set_flag(Flag::Z, w == 0);
         self.state.disable_flag(Flag::N);
@@ -322,7 +322,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
     pub fn rrc8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.state, self.bus);
-        let w = (r >> 1) | (r << 7);
+        let w = r.rotate_right(1);
 
         self.state.set_flag(Flag::Z, w == 0);
         self.state.disable_flag(Flag::N);
@@ -398,7 +398,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
 
     pub fn swap8<RW: Reader8 + Writer8>(&mut self, rw: RW) -> &mut Self {
         let r = rw.read8(self.state, self.bus);
-        let w = (r << 4) | (r >> 4);
+        let w = r.rotate_right(4);
 
         self.state.set_flag(Flag::Z, w == 0);
         self.state.disable_flag(Flag::N);
@@ -473,7 +473,7 @@ impl<'a, B: Bus + 'a> Processor<'a, B> {
             if 0 < offset {
                 self.state.PC = next_addr.wrapping_add(offset as u16);
             } else {
-                self.state.PC = next_addr.wrapping_sub(offset.abs() as u16);
+                self.state.PC = next_addr.wrapping_sub(offset.unsigned_abs() as u16);
             }
 
             self.extra_cycle += 4;
@@ -672,7 +672,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00,
@@ -718,7 +718,7 @@ mod tests {
             b: u16,
             c: u16,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00FF,
@@ -764,7 +764,7 @@ mod tests {
             b: i8,
             c: u16,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00FF,
@@ -810,7 +810,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00,
@@ -863,7 +863,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x02,
@@ -909,7 +909,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x03,
@@ -979,7 +979,7 @@ mod tests {
             or_flags: FlagZNHC,
             xor: u8,
             xor_flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x01,
@@ -1068,7 +1068,7 @@ mod tests {
             carry: bool,
             rl: u8,
             rlc: u8,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0b1000_1000,
@@ -1113,13 +1113,14 @@ mod tests {
             sra: u8,
             srl: u8,
             swap: u8,
-        };
-        for test in &[TestCase {
-            a: 0b1000_0001,
-            sra: 0b1100_0000,
-            srl: 0b0100_0000,
-            swap: 0b0001_1000,
-        }] {
+        }
+        {
+            let test = &TestCase {
+                a: 0b1000_0001,
+                sra: 0b1100_0000,
+                srl: 0b0100_0000,
+                swap: 0b0001_1000,
+            };
             {
                 let mut state = State::new();
                 let mut ram = Ram::new(vec![0x00]);
@@ -1157,15 +1158,15 @@ mod tests {
 
         let mut p = Processor::new(&mut state, &mut ram);
         p.bit8(7, R8::A);
-        assert_eq!(true, p.state.get_flag(Flag::Z));
+        assert!(p.state.get_flag(Flag::Z));
         p.set8(7, R8::A);
-        assert_eq!(true, p.state.get_flag(Flag::Z));
+        assert!(p.state.get_flag(Flag::Z));
         p.bit8(7, R8::A);
-        assert_eq!(false, p.state.get_flag(Flag::Z));
+        assert!(!p.state.get_flag(Flag::Z));
         p.res8(7, R8::A);
-        assert_eq!(false, p.state.get_flag(Flag::Z));
+        assert!(!p.state.get_flag(Flag::Z));
         p.bit8(7, R8::A);
-        assert_eq!(true, p.state.get_flag(Flag::Z));
+        assert!(p.state.get_flag(Flag::Z));
     }
 
     #[test]
