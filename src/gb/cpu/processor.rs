@@ -672,7 +672,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00,
@@ -718,7 +718,7 @@ mod tests {
             b: u16,
             c: u16,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00FF,
@@ -764,7 +764,7 @@ mod tests {
             b: i8,
             c: u16,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00FF,
@@ -810,7 +810,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x00,
@@ -863,7 +863,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x02,
@@ -909,7 +909,7 @@ mod tests {
             b: u8,
             c: u8,
             flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x03,
@@ -979,7 +979,7 @@ mod tests {
             or_flags: FlagZNHC,
             xor: u8,
             xor_flags: FlagZNHC,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0x01,
@@ -1068,7 +1068,7 @@ mod tests {
             carry: bool,
             rl: u8,
             rlc: u8,
-        };
+        }
         for test in &[
             TestCase {
                 a: 0b1000_1000,
@@ -1113,7 +1113,7 @@ mod tests {
             sra: u8,
             srl: u8,
             swap: u8,
-        };
+        }
         {
             let test = &TestCase {
                 a: 0b1000_0001,
