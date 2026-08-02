@@ -1,0 +1,13 @@
+name: cargo fmt
+description: Run cargo fmt
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+    - uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+      with:
+        toolchain: nightly
+        components: rustfmt
+    - name: Run fmt check
+      run: cargo fmt --all -- --check
+      shell: bash
