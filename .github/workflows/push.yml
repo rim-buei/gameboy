@@ -1,0 +1,66 @@
+name: Push pipeline
+
+permissions: {}
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  RUSTFLAGS: -Dwarnings
+  RUST_BACKTRACE: 1
+
+jobs:
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: $/.github/actions/cargo-fmt
+  clippy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: $/.github/actions/cargo-clippy
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - macos-26
+          - macos-26-intel
+        toolchain:
+          - stable
+          - nightly
+        profile:
+          - release
+    outputs:
+      release_built: ${{ steps.set-output.outputs.release_built }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rust-src
+      - name: Build binaries in "${{ matrix.profile }}" mode
+        run: cargo build --profile ${{ matrix.profile }}
+        env:
+          TARGET: ${{ matrix.target }}
+      - name: Run tests in "${{ matrix.profile }}" mode
+        run: cargo test --profile ${{ matrix.profile }}
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: static
+          path: |
+            static
