@@ -81,11 +81,11 @@ fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
 fn handle_input(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
     fn key_to_button(key: &str) -> Option<Button> {
         match key.to_lowercase().as_ref() {
-            "z" => Some(Button::B),
             "x" => Some(Button::A),
+            "z" => Some(Button::B),
 
-            "enter" => Some(Button::Start),
-            "shift" => Some(Button::Select),
+            " " => Some(Button::Start),
+            "c" => Some(Button::Select),
 
             "arrowup" => Some(Button::Up),
             "arrowdown" => Some(Button::Down),
