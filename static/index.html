@@ -1,61 +1,61 @@
 <!doctype html>
 <html>
   <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Game Boy Emulator</title>
     <style>
-     body {
-       font-family: "Inter", sans-serif;
-     }
-     .container {
-       display: flex;
-       flex-direction: column;
-       align-items: center;
-       justify-content: center;
-     }
-     .cartridge {
-       width: 480px;
-       margin: 0;
-       padding: 0.75rem 0 0.75rem;
-     }
-     .display canvas {
-       width: 480px;
-       height: 432px;
-       margin: 0;
-       padding: 0;
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .cartridge {
+        width: 480px;
+        margin: 0;
+        padding: 0.75rem 0 0.75rem;
+      }
+      .display canvas {
+        width: 480px;
+        height: 432px;
+        margin: 0;
+        padding: 0;
 
-       border: solid #c3c7cb;
-       border-width: 1px;
-     }
-     .controls {
-       margin: 0.75rem 0 0.75rem 0;
-       padding: 0;
-     }
-     .controls kbd {
-       background-color: #f7f7f8;
-       padding: .0625rem .25rem;
+        border: solid #c3c7cb;
+        border-width: 1px;
+      }
+      .controls {
+        margin: 0.75rem 0 0.75rem 0;
+        padding: 0;
+      }
+      .controls kbd {
+        background-color: #f7f7f8;
+        padding: 0.0625rem 0.25rem;
 
-       border: solid #c3c7cb;
-       border-radius: 0.25rem;
-       border-width: 1px 1px 2px;
+        border: solid #c3c7cb;
+        border-radius: 0.25rem;
+        border-width: 1px 1px 2px;
 
-       color: #51565d;
-       font-family: "JetBrains Mono", monospace;
-     }
-     .footer {
-     }
+        color: #51565d;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .footer {
+      }
     </style>
   </head>
   <body>
     <script type="module">
-     import init from './pkg/gameboy.js';
-     init();
+      import init from "./pkg/gameboy.js";
+      init();
     </script>
     <div class="container">
       <div class="cartridge">
         <span>
           Cartridge:
-          <input type="file" id="load-rom"/>
+          <input type="file" id="load-rom" />
         </span>
       </div>
       <div class="display">
@@ -74,7 +74,9 @@
         </span>
       </div>
       <div class="footer">
-        <a href="https://github.com/rim-buei/gameboy" target="_blank"><img src = "./images/github.svg" alt="GitHub" width="32" height="32"/></a>
+        <a href="https://github.com/rim-buei/gameboy" target="_blank"
+          ><img src="./images/github.svg" alt="GitHub" width="32" height="32"
+        /></a>
       </div>
     </div>
   </body>

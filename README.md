@@ -32,6 +32,7 @@ cargo install wasm-pack
 # How to Run
 
 Clone the repository and build the project with `wasm-pack`:
+
 ```sh
 git clone https://github.com/rim-buei/gameboy.git
 cd gameboy
@@ -52,6 +53,7 @@ Other test cases are not yet passing :disappointed:
 # Known Issues / Missing Features
 
 The following features are not yet implemented:
+
 - No APU support
 - No save file support
 - No link cable support
