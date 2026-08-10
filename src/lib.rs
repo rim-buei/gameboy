@@ -84,8 +84,8 @@ fn handle_input(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
             "x" => Some(Button::A),
             "z" => Some(Button::B),
 
-            " " => Some(Button::Start),
-            "c" => Some(Button::Select),
+            "enter" => Some(Button::Start),
+            " " => Some(Button::Select),
 
             "arrowup" => Some(Button::Up),
             "arrowdown" => Some(Button::Down),
