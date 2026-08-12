@@ -4,6 +4,10 @@ A Game Boy emulator written in Rust.
 
 This project does not aim to support Game Boy Color's features. Instead, it focuses on keeping the implementation simple and accurate (hopefully! :laughing:). It may also serve as a helpful reference for learning the basics of the Game Boy specification.
 
+# Live Demo
+
+https://tekito.net/gameboy
+
 # Project Status
 
 - Work in progress
