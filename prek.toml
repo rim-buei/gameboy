@@ -6,29 +6,31 @@ freeze = true
 repo = "https://github.com/pre-commit/pre-commit-hooks"
 rev = "v6.0.0"
 hooks = [
-  { id = "check-toml" },
   { id = "check-yaml" },
   { id = "end-of-file-fixer" },
   { id = "trailing-whitespace" },
 ]
 
 [[repos]]
+repo = "https://github.com/ComPWA/taplo-pre-commit"
+rev = "v0.9.3"
+hooks = [{ id = "taplo-format" }]
+
+[[repos]]
 repo = "local"
-hooks = [
-  {
-    id = "cargo-fmt",
-    name = "cargo fmt",
-    entry = "cargo fmt --all -- --check",
-    language = "rust",
-    types = ["text"],
-    pass_filenames = false
-  },
-  {
-    id = "cargo-clippy",
-    name = "cargo clippy",
-    language = "rust",
-    types = ["text"],
-    pass_filenames = false,
-    entry = "cargo clippy --all-targets --all-features -- -D warnings"
-  }
-]
+
+[[repos.hooks]]
+id = "cargo-fmt"
+name = "cargo fmt"
+entry = "cargo fmt --all -- --check"
+language = "rust"
+types = ["text"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "cargo-clippy"
+name = "cargo clippy"
+language = "rust"
+types = ["text"]
+pass_filenames = false
+entry = "cargo clippy --all-targets --all-features -- -D warnings"
