@@ -5,7 +5,9 @@ use self::gb::cartridge::Cartridge;
 use self::gb::joypad::Button;
 use self::gb::screen::{SCREEN_H, SCREEN_W};
 use std::cell::RefCell;
+use std::panic;
 use std::rc::Rc;
+use wasm_bindgen::JsValue;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
@@ -21,7 +23,7 @@ macro_rules! enclose {
 
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
-    console_error_panic_hook::set_once();
+    set_panic_hook();
 
     let gameboy = Rc::new(RefCell::new(GameBoy::new()));
     handle_custom_rom(gameboy.clone())?;
@@ -35,6 +37,12 @@ pub fn main() -> Result<(), JsValue> {
     async_render_loop(ctx, gameboy);
 
     Ok(())
+}
+
+fn set_panic_hook() {
+    panic::set_hook(Box::new(|info| {
+        web_sys::console::error_1(&JsValue::from_str(&info.to_string()));
+    }));
 }
 
 fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
