@@ -4,6 +4,7 @@ use self::gb::GameBoy;
 use self::gb::cartridge::Cartridge;
 use self::gb::joypad::Button;
 use self::gb::screen::{SCREEN_H, SCREEN_W};
+use js_sys::Uint8Array;
 use std::cell::RefCell;
 use std::panic;
 use std::rc::Rc;
@@ -11,8 +12,10 @@ use wasm_bindgen::JsValue;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{Clamped, JsCast};
+use wasm_bindgen_futures::{JsFuture, spawn_local};
 use web_sys::{
-    CanvasRenderingContext2d, Event, HtmlCanvasElement, HtmlInputElement, ImageData, KeyboardEvent, ProgressEvent,
+    CanvasRenderingContext2d, Event, HtmlCanvasElement, HtmlInputElement, HtmlSelectElement, ImageData, KeyboardEvent,
+    ProgressEvent,
 };
 
 macro_rules! enclose {
@@ -26,8 +29,16 @@ pub fn main() -> Result<(), JsValue> {
     set_panic_hook();
 
     let gameboy = Rc::new(RefCell::new(GameBoy::new()));
-    handle_custom_rom(gameboy.clone())?;
+
     handle_input(gameboy.clone())?;
+    match handle_load_rom(gameboy.clone()) {
+        Ok(()) => (),
+        Err(msg) => web_sys::console::log_1(&msg),
+    };
+    match handle_select_rom(gameboy.clone()) {
+        Ok(()) => (),
+        Err(msg) => web_sys::console::log_1(&msg),
+    };
 
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
@@ -45,10 +56,12 @@ fn set_panic_hook() {
     }));
 }
 
-fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
+fn handle_load_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
-    let load_rom_button = document.get_element_by_id("load-rom").unwrap();
+    let load_rom = document
+        .get_element_by_id("load-rom")
+        .ok_or_else(|| JsValue::from_str("element with 'load-rom' not found, skipping"))?;
 
     let closure = Closure::wrap(Box::new(move |event: Event| {
         let input: HtmlInputElement = event.target().unwrap().dyn_into().unwrap();
@@ -65,7 +78,7 @@ fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
 
         let onload = enclose!([gameboy, reader] Closure::wrap(Box::new(move |_: ProgressEvent| {
             let buffer = reader.result().unwrap();
-            let array = js_sys::Uint8Array::new(&buffer);
+            let array = Uint8Array::new(&buffer);
             let rom: Vec<u8> = array.to_vec();
 
             let cart = Cartridge::new(rom);
@@ -80,8 +93,57 @@ fn handle_custom_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
         reader.read_as_array_buffer(&file).unwrap();
     }) as Box<dyn FnMut(Event)>);
 
-    load_rom_button.add_event_listener_with_callback("change", closure.as_ref().unchecked_ref())?;
+    load_rom.add_event_listener_with_callback("change", closure.as_ref().unchecked_ref())?;
     closure.forget();
+
+    Ok(())
+}
+
+fn handle_select_rom(gameboy: Rc<RefCell<GameBoy>>) -> Result<(), JsValue> {
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let select_rom = document
+        .get_element_by_id("select-rom")
+        .ok_or_else(|| JsValue::from_str("element with 'select-rom' not found, skipping"))?;
+
+    let closure = Closure::wrap(Box::new(move |event: Event| {
+        let select: HtmlSelectElement = event.target().unwrap().dyn_into().unwrap();
+        let path = select.value();
+
+        let window = window.clone();
+        let gameboy = gameboy.clone();
+
+        spawn_local(async move {
+            let result = async {
+                let response = JsFuture::from(window.fetch_with_str(&path)).await?;
+                let response: web_sys::Response = response.dyn_into()?;
+
+                if !response.ok() {
+                    return Err(JsValue::from_str("failed to load ROM"));
+                }
+
+                let buffer = JsFuture::from(response.array_buffer()?).await?;
+                let rom = Uint8Array::new(&buffer);
+
+                let cart = Cartridge::new(rom.to_vec());
+                gameboy.borrow_mut().pause();
+                gameboy.borrow_mut().load(cart);
+                gameboy.borrow_mut().unpause();
+                Ok::<(), JsValue>(())
+            }
+            .await;
+
+            if let Err(error) = result {
+                web_sys::console::error_1(&error);
+            }
+        });
+    }) as Box<dyn FnMut(Event)>);
+
+    select_rom.add_event_listener_with_callback("change", closure.as_ref().unchecked_ref())?;
+    closure.forget();
+
+    // Trigger the "change" to load the initial rom
+    select_rom.dispatch_event(&Event::new("change")?)?;
 
     Ok(())
 }
