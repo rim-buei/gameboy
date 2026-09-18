@@ -13,11 +13,11 @@ env:
 
 jobs:
   fmt:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: $/.github/actions/cargo-fmt
   clippy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: $/.github/actions/cargo-clippy
   build:
@@ -57,7 +57,7 @@ jobs:
       - name: Run tests in "${{ matrix.profile }}" mode
         run: cargo test --profile ${{ matrix.profile }}
   build-static:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Cache
